@@ -1,11 +1,8 @@
 #pragma once
 
-#include <mmsystem.h>
-#include <mmreg.h>
+#include <iostream>
 #include <dsound.h>
-
-#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#include "WaveFormat.h"
 
 class InputDevice
 {
@@ -13,16 +10,18 @@ public:
 	InputDevice();
 	~InputDevice();
 
-	HRESULT Open(const char* strFilename);
-	HRESULT Reset();
-	HRESULT Read(unsigned int nSizeToRead, const byte pbData, unsigned int& pnSizeRead);
-	HRESULT Close();
+	bool OpenFile(const char* fileName, WAVEFORMATEX& waveFormat);
+
+	DataChunk* GetNextChunk();
+
+	void CloseFile();
 
 private:
-	HRESULT WaveOpenFile(const char* strFileName);
-	HRESULT ReadMMIO();
+	DataChunk* FillChunk();
 
-	HMMIO m_hmmioIn;
-	WAVEFORMATEX* m_pwfx;
-	MMCKINFO m_ckInRiff;
+	FILE* file;
+
+	const unsigned short defaultChunkSize = 65000;
+
+	WaveFormat header;
 };

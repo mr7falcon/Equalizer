@@ -1,45 +1,51 @@
 #include "InputDevice.h"
 
 InputDevice::InputDevice()
+	:file(nullptr)
 {
-
 }
 
 InputDevice::~InputDevice()
 {
-
 }
 
-HRESULT InputDevice::Open(const char* strFilename)
+bool InputDevice::OpenFile(const char* fileName, WAVEFORMATEX& waveFormat)
 {
-	HRESULT hr;
+	fopen_s(&file, fileName, "r");
 
-	if (FAILED(hr = WaveOpenFile(strFilename)))
-		return hr;
-
-	if (FAILED(hr = Reset()))
-		return hr;
-
-	return hr;
-}
-
-HRESULT InputDevice::WaveOpenFile(const char* strFileName)
-{
-	HRESULT hr;
-
-	if (NULL == (m_hmmioIn = mmioOpen(strFileName, NULL, MMIO_ALLOCBUF | MMIO_READ)))
-		return E_FAIL;
-
-	if (FAILED(hr = ReadMMIO()))
+	if (!file)
 	{
-		mmioClose(m_hmmioIn, 0);
-		return hr;
+		std::cout << "file opening error" << std::endl;
+		return false;
 	}
 
-	return S_OK;
+	std::fread(&header, sizeof(header), 1, file);
+
+	waveFormat.cbSize = defaultChunkSize;
+	waveFormat.nChannels = header.numChannels;
+	waveFormat.nSamplesPerSec = header.sampleRate;
+	waveFormat.wBitsPerSample = header.bitsPerSample;
+	waveFormat.nAvgBytesPerSec = header.byteRate;
+	waveFormat.nBlockAlign = header.blockAlign;
+	waveFormat.wFormatTag = header.audioFormat;
+
+	return true;
 }
 
-HRESULT InputDevice::ReadMMIO()
+DataChunk* InputDevice::FillChunk()
 {
+	DataChunk* data = new DataChunk(defaultChunkSize);
 
+	std::fread(data->data, defaultChunkSize, 1, file);
+
+	return data;
+}
+
+DataChunk* InputDevice::GetNextChunk()
+{
+	return FillChunk();
+}
+void InputDevice::CloseFile()
+{
+	std::fclose(file);
 }
