@@ -1,7 +1,5 @@
 #pragma once
 
-#include <dsound.h>
-
 struct WaveFormat
 {
 	WaveFormat()
@@ -73,4 +71,4 @@ struct DataChunk
 	byte* data;
 };
 
-const unsigned short defaultChunkSize = 65000;
+const unsigned short defaultChunkSize = 65500;

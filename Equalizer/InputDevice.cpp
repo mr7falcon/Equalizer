@@ -1,6 +1,22 @@
 #include "InputDevice.h"
 
-InputDevice::InputDevice()
+void RequestNewDataChunk(InputDevice* inputDevice)
+{
+	Log("New data chunk requesting");
+
+	std::thread thd([=]()
+	{
+		if (inputDevice)
+		{
+			inputDevice->OnNewChunkRequested();
+		}
+	});
+
+	thd.detach();
+}
+
+InputDevice::InputDevice(Block* output)
+	:Block(output)
 {
 }
 
@@ -14,7 +30,7 @@ bool InputDevice::OpenFile(const char* fileName, WAVEFORMATEX& waveFormat)
 
 	if (!m_file.is_open())
 	{
-		std::cout << "file opening error" << std::endl;
+		Log("file opening error");
 		return false;
 	}
 
@@ -22,7 +38,7 @@ bool InputDevice::OpenFile(const char* fileName, WAVEFORMATEX& waveFormat)
 
 	if (!m_header.Check())
 	{
-		std::cout << "file format error" << std::endl;
+		Log("file format error");
 		return false;
 	}
 
@@ -41,16 +57,21 @@ DataChunk* InputDevice::FillChunk()
 {
 	DataChunk* data = new DataChunk(defaultChunkSize);
 
+	g_lock.lock();
+
 	m_file.read((char*)data->data, defaultChunkSize);
+
+	g_lock.unlock();
 
 	return data;
 }
 
-DataChunk* InputDevice::GetNextChunk()
-{
-	return FillChunk();
-}
 void InputDevice::CloseFile()
 {
 	m_file.close();
+}
+
+void InputDevice::OnNewChunkRequested()
+{
+	SendData(FillChunk());
 }

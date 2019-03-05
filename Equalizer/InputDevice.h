@@ -1,21 +1,20 @@
 #pragma once
 
-#include <iostream>
 #include <fstream>
-#include <dsound.h>
-#include "WaveFormat.h"
+#include "Block.h"
 
-class InputDevice
+class InputDevice : public Block
 {
 public:
-	InputDevice();
+	InputDevice(Block* output);
 	~InputDevice();
 
 	bool OpenFile(const char* fileName, WAVEFORMATEX& waveFormat);
 
-	DataChunk* GetNextChunk();
-
 	void CloseFile();
+
+	void OnNewChunkRequested();
+	void HandleDataInternal(DataChunk* data) { return; }
 
 private:
 	DataChunk* FillChunk();
@@ -24,3 +23,5 @@ private:
 
 	WaveFormat m_header;
 };
+
+void RequestNewDataChunk(InputDevice* inputDevice);

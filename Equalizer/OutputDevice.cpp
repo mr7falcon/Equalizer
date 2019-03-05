@@ -1,8 +1,12 @@
 #include "OutputDevice.h"
 
 OutputDevice::OutputDevice()
-	:m_pDS(NULL),
-	m_pDSBuffer(NULL)
+	:Block(NULL),
+	m_pDS(NULL),
+	m_bufferSize(defaultChunkSize),
+	m_rdPos(0),
+	m_wtPos(0),
+	inputDevice(nullptr)
 {
 }
 
@@ -53,7 +57,8 @@ HRESULT OutputDevice::InitDevice(HWND hDlg)
 
 HRESULT OutputDevice::FreeDirectSound()
 {
-	SAFE_RELEASE(m_pDSBuffer);
+	for (unsigned int i = 0; i < m_bufferSize; ++i)
+		SAFE_RELEASE(m_buffers[i]);
 	SAFE_RELEASE(m_pDS);
 
 	CoUninitialize();
@@ -64,116 +69,127 @@ HRESULT OutputDevice::FreeDirectSound()
 HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 {
 	HRESULT hr;
-
-	SAFE_RELEASE(m_pDSBuffer);
+	LPDIRECTSOUNDBUFFER lpDSBuf;
 
 	DSBUFFERDESC dsbd;
 	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
 	dsbd.dwSize = sizeof(DSBUFFERDESC);
 	dsbd.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCDEFER | DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_CTRLVOLUME;
-	dsbd.dwBufferBytes = defaultChunkSize;
+	dsbd.dwBufferBytes = m_bufferSize;
 	dsbd.lpwfxFormat = dynamic_cast<LPWAVEFORMATEX>(&waveFormat);
  
-	if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &m_pDSBuffer, NULL)))
+	if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &lpDSBuf, NULL)))
 		return hr;
 
-	m_bufferSize = dsbd.dwBufferBytes;
+	m_buffers.push_back(lpDSBuf);
 
 	return S_OK;
 }
 
 HRESULT OutputDevice::FillBuffer(DataChunk* data)
 {
-	HRESULT hr;
-	
-	void* pbData = nullptr;
-	void* pbData2 = nullptr;
-	unsigned long dwLength;
-	unsigned long dwLength2;
+	if (m_buffers[m_wtPos])
+	{
+		HRESULT hr;
 
-	if (FAILED(hr = m_pDSBuffer->Lock(0, m_bufferSize, &pbData, &dwLength,
-		&pbData2, &dwLength2, 0L)))
-		return hr;
+		void* pbData = nullptr;
+		void* pbData2 = nullptr;
+		unsigned long dwLength;
+		unsigned long dwLength2;
 
-	memcpy(pbData, data->data, data->size);
+		g_lock.lock();
 
-	m_pDSBuffer->Unlock(pbData, m_bufferSize, NULL, 0);
-	pbData = NULL;
- 
-	return S_OK;
+		if (FAILED(hr = m_buffers[m_wtPos]->Lock(0, m_bufferSize, &pbData, &dwLength,
+			&pbData2, &dwLength2, 0L)))
+			return hr;
+
+		memcpy(pbData, data->data, data->size);
+
+		m_buffers[m_wtPos]->Unlock(pbData, m_bufferSize, NULL, 0);
+		pbData = NULL;
+
+		m_wtPos++;
+		Circle();
+
+		g_lock.unlock();
+
+		return S_OK;
+	}
+
+	return S_FALSE;
 }
 
-bool OutputDevice::IsBufferPlaying()
+bool OutputDevice::IsPlaying()
 {
-	unsigned long dwStatus = 0;
+	for (int i = 0; i < buffersCount; ++i)
+	{
+		if (m_buffers[i])
+		{
+			unsigned long dwStatus = 0;
+			m_buffers[i]->GetStatus(&dwStatus);
 
-	if (NULL == m_pDSBuffer)
-		return false;
+			if (dwStatus & DSBSTATUS_PLAYING)
+				return true;
+		}
+	};
 
-	m_pDSBuffer->GetStatus(&dwStatus);
-
-	if (dwStatus & DSBSTATUS_PLAYING)
-		return true;
-	else
-		return false;
+	return false;
 }
 
-HRESULT OutputDevice::PlayBuffer(bool bLooped, DataChunk* data)
+HRESULT OutputDevice::Play(DataChunk* data)
 {
 	HRESULT hr;
-
-	if (NULL == m_pDSBuffer)
-		return E_FAIL;
 
 	if (FAILED(hr = RestoreBuffers(data)))
 		return hr;
 
-	unsigned long dwLooped = bLooped ? DSBPLAY_LOOPING : 0L;
-	if (FAILED(hr = m_pDSBuffer->Play(0, 0, dwLooped)))
-		return hr;
+	if (m_buffers[m_rdPos])
+	{
+		g_lock.lock();
 
-	delete(data);
+		if (FAILED(hr = m_buffers[m_rdPos]->Play(0, 0, 0)))
+			return hr;
 
-	return S_OK;
+		SAFE_RELEASE(m_buffers[m_rdPos]);
+
+		m_rdPos++;
+		Circle();
+
+		g_lock.unlock();
+
+		RequestNewDataChunk(inputDevice);
+
+		return S_OK;
+	}
+
+	return S_FALSE;
 }
 
 HRESULT OutputDevice::RestoreBuffers(DataChunk* data)
 {
 	HRESULT hr;
 
-	if (NULL == m_pDSBuffer)
+	
+	if (NULL == m_buffers[m_rdPos])
 		return S_OK;
 
 	unsigned long dwStatus;
-	if (FAILED(hr = m_pDSBuffer->GetStatus(&dwStatus)))
+	if (FAILED(hr = m_buffers[m_rdPos]->GetStatus(&dwStatus)))
 		return hr;
 
 	if (dwStatus & DSBSTATUS_BUFFERLOST)
 	{
 		do
 		{
-			hr = m_pDSBuffer->Restore();
+			hr = m_buffers[m_rdPos]->Restore();
 			if (hr == DSERR_BUFFERLOST)
 				Sleep(10);
-		} while (hr = m_pDSBuffer->Restore());
+		} while (hr = m_buffers[m_rdPos]->Restore());
 
 		if (FAILED(hr = FillBuffer(data)))
 			return hr;
 	}
 
-	return S_OK;
-}
-
-HRESULT OutputDevice::PlayChunk(HWND hDlg, DataChunk* data)
-{
-	HRESULT hr;
-
-	if (FAILED(hr = FillBuffer(data)))
-		return hr;
-
-	if (FAILED(hr = PlayBuffer(false, data)))
-		return hr;
-	
 	return S_OK;
 }
 
@@ -184,8 +200,62 @@ HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
 	if (FAILED(hr = InitDevice(hDlg)))
 		return hr;
 
-	if (FAILED(hr = CreateBuffer(waveFormat)))
-		return hr;
+	for (int i = 0; i < buffersCount; ++i)
+	{
+		if (FAILED(hr = CreateBuffer(waveFormat)))
+			return hr;
+	}
 
 	return S_OK;
+}
+
+void OutputDevice::Circle()
+{
+	if (m_rdPos >= buffersCount)
+		m_rdPos -= buffersCount;
+
+	if (m_wtPos >= buffersCount)
+		m_wtPos -= buffersCount;
+}
+
+void OutputDevice::HandleDataInternal(DataChunk* data)
+{
+	Log("New data chunk received");
+
+	if (!IsBuffersFull())
+	{
+		if (FAILED(FillBuffer(data)))
+		{
+			Log("buffer filling error");
+			delete(data);
+			return;
+		}
+
+		Log("Buffer filled");
+
+		if (!IsPlaying())
+		{
+			if (FAILED(Play(data)))
+			{
+				Log("buffer playing error");
+				delete(data);
+				return;
+			}
+		}
+
+		Log("Chunk played");
+	}
+
+	delete(data);
+}
+
+bool OutputDevice::IsBuffersFull() const
+{
+	for (int i = 0; i < buffersCount; ++i)
+	{
+		if (m_buffers[i])
+			return false;
+	}
+
+	return true;
 }

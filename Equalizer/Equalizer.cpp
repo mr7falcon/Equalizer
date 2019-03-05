@@ -1,4 +1,5 @@
 ﻿#include <windows.h>
+#include <thread>
 #include "InputDevice.h"
 #include "OutputDevice.h"
 #include "WaveFormat.h"
@@ -9,8 +10,9 @@ int main(int argc, char** argv)
 {
 	HWND hDlg = GetForegroundWindow();
 
-	InputDevice inputDevice;
 	OutputDevice outputDevice;
+	InputDevice inputDevice(&outputDevice);
+	outputDevice.SetInputDevice(&inputDevice);
 
 	WAVEFORMATEX waveFormat;
 	if (!inputDevice.OpenFile(argv[1], waveFormat))
@@ -23,16 +25,10 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	for (;;)
+	for (int i = 0; i < buffersCount; ++i)
 	{
-		if (!outputDevice.IsBufferPlaying())
-		{
-			DataChunk* data = inputDevice.GetNextChunk();
-
-			if (FAILED(outputDevice.PlayChunk(hDlg, data)))
-			{
-				return 1;
-			}
-		}
+		RequestNewDataChunk(&inputDevice);
 	}
+
+	Sleep(40000);
 }

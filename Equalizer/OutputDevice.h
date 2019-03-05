@@ -1,20 +1,23 @@
 #pragma once
 
-#include <dsound.h>
-#include "WaveFormat.h"
+#include <vector>
+#include "InputDevice.h"
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } }
+#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
 
-class OutputDevice
+static const unsigned short buffersCount = 3;
+
+class OutputDevice : public Block
 {
 public:
 	OutputDevice();
 	~OutputDevice();
 
-	HRESULT PlayChunk(HWND hDlg, DataChunk* data);
 	HRESULT Init(HWND hDlg, WAVEFORMATEX& waveFormat);
-	bool IsBufferPlaying();
+	bool IsPlaying();
+
+	void SetInputDevice(InputDevice* inputDevice) { this->inputDevice = inputDevice; }
 
 private:
 	HRESULT InitDevice(HWND hDlg);
@@ -22,11 +25,20 @@ private:
 	HRESULT CreateBuffer(WAVEFORMATEX& waveFormat);
 	HRESULT FillBuffer(DataChunk* data);
 
-	HRESULT PlayBuffer(bool bLooped, DataChunk* data);
+	HRESULT Play(DataChunk* data);
 	HRESULT RestoreBuffers(DataChunk* data);
+	bool IsBuffersFull() const;
+
+	void HandleDataInternal(DataChunk* data);
 
 	LPDIRECTSOUND m_pDS;
-	LPDIRECTSOUNDBUFFER m_pDSBuffer;
 
 	unsigned long m_bufferSize;
+
+	std::vector<LPDIRECTSOUNDBUFFER> m_buffers;
+	unsigned short m_rdPos;
+	unsigned short m_wtPos;
+	void Circle();
+
+	InputDevice* inputDevice;
 };
