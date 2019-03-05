@@ -13,16 +13,26 @@ int main(int argc, char** argv)
 	OutputDevice outputDevice;
 
 	WAVEFORMATEX waveFormat;
-	inputDevice.OpenFile(argv[1], waveFormat);
+	if (!inputDevice.OpenFile(argv[1], waveFormat))
+	{
+		return 1;
+	}
 
-	outputDevice.Init(hDlg, waveFormat);
+	if (FAILED(outputDevice.Init(hDlg, waveFormat)))
+	{
+		return 1;
+	}
 
 	for (;;)
 	{
 		if (!outputDevice.IsBufferPlaying())
 		{
 			DataChunk* data = inputDevice.GetNextChunk();
-			outputDevice.PlayChunk(hDlg, data);
+
+			if (FAILED(outputDevice.PlayChunk(hDlg, data)))
+			{
+				return 1;
+			}
 		}
 	}
 }

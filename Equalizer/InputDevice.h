@@ -20,7 +20,7 @@ public:
 private:
 	DataChunk* FillChunk();
 
-	std::ifstream file;
+	std::ifstream m_file;
 
-	WaveFormat header;
+	WaveFormat m_header;
 };

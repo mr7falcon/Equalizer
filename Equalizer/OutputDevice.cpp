@@ -171,7 +171,10 @@ HRESULT OutputDevice::PlayChunk(HWND hDlg, DataChunk* data)
 	if (FAILED(hr = FillBuffer(data)))
 		return hr;
 
-	return hr = PlayBuffer(false, data);
+	if (FAILED(hr = PlayBuffer(false, data)))
+		return hr;
+	
+	return S_OK;
 }
 
 HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
