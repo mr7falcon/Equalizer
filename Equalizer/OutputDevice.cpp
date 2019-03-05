@@ -71,7 +71,7 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
 	dsbd.dwSize = sizeof(DSBUFFERDESC);
 	dsbd.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCDEFER | DSBCAPS_CTRLPOSITIONNOTIFY | DSBCAPS_CTRLVOLUME;
-	dsbd.dwBufferBytes = waveFormat.cbSize;
+	dsbd.dwBufferBytes = defaultChunkSize;
 	dsbd.lpwfxFormat = dynamic_cast<LPWAVEFORMATEX>(&waveFormat);
  
 	if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &m_pDSBuffer, NULL)))
@@ -85,6 +85,7 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 HRESULT OutputDevice::FillBuffer(DataChunk* data)
 {
 	HRESULT hr;
+	
 	void* pbData = nullptr;
 	void* pbData2 = nullptr;
 	unsigned long dwLength;
@@ -99,8 +100,6 @@ HRESULT OutputDevice::FillBuffer(DataChunk* data)
 	m_pDSBuffer->Unlock(pbData, m_bufferSize, NULL, 0);
 	pbData = NULL;
  
-	delete(data);
-
 	return S_OK;
 }
 
@@ -129,9 +128,11 @@ HRESULT OutputDevice::PlayBuffer(bool bLooped, DataChunk* data)
 	if (FAILED(hr = RestoreBuffers(data)))
 		return hr;
 
-	DWORD dwLooped = bLooped ? DSBPLAY_LOOPING : 0L;
+	unsigned long dwLooped = bLooped ? DSBPLAY_LOOPING : 0L;
 	if (FAILED(hr = m_pDSBuffer->Play(0, 0, dwLooped)))
 		return hr;
+
+	delete(data);
 
 	return S_OK;
 }

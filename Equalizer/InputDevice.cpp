@@ -1,7 +1,6 @@
 #include "InputDevice.h"
 
 InputDevice::InputDevice()
-	:file(nullptr)
 {
 }
 
@@ -11,17 +10,17 @@ InputDevice::~InputDevice()
 
 bool InputDevice::OpenFile(const char* fileName, WAVEFORMATEX& waveFormat)
 {
-	fopen_s(&file, fileName, "r");
+	file.open(fileName, std::fstream::binary);
 
-	if (!file)
+	if (!file.is_open())
 	{
 		std::cout << "file opening error" << std::endl;
 		return false;
 	}
 
-	std::fread(&header, sizeof(header), 1, file);
+	file.read((char*)&header, sizeof(header));
 
-	waveFormat.cbSize = defaultChunkSize;
+	waveFormat.cbSize = sizeof(WAVEFORMATEX);
 	waveFormat.nChannels = header.numChannels;
 	waveFormat.nSamplesPerSec = header.sampleRate;
 	waveFormat.wBitsPerSample = header.bitsPerSample;
@@ -36,7 +35,7 @@ DataChunk* InputDevice::FillChunk()
 {
 	DataChunk* data = new DataChunk(defaultChunkSize);
 
-	std::fread(data->data, defaultChunkSize, 1, file);
+	file.read((char*)data->data, defaultChunkSize);
 
 	return data;
 }
@@ -47,5 +46,5 @@ DataChunk* InputDevice::GetNextChunk()
 }
 void InputDevice::CloseFile()
 {
-	std::fclose(file);
+	file.close();
 }

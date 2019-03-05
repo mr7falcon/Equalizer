@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <dsound.h>
 #include "WaveFormat.h"
 
@@ -19,9 +20,7 @@ public:
 private:
 	DataChunk* FillChunk();
 
-	FILE* file;
-
-	const unsigned short defaultChunkSize = 65000;
+	std::ifstream file;
 
 	WaveFormat header;
 };

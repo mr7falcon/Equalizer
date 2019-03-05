@@ -17,6 +17,12 @@ int main(int argc, char** argv)
 
 	outputDevice.Init(hDlg, waveFormat);
 
-	DataChunk* data = inputDevice.GetNextChunk();
-	outputDevice.PlayChunk(hDlg, data);
+	for (;;)
+	{
+		if (!outputDevice.IsBufferPlaying())
+		{
+			DataChunk* data = inputDevice.GetNextChunk();
+			outputDevice.PlayChunk(hDlg, data);
+		}
+	}
 }

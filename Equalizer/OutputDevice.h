@@ -14,6 +14,7 @@ public:
 
 	HRESULT PlayChunk(HWND hDlg, DataChunk* data);
 	HRESULT Init(HWND hDlg, WAVEFORMATEX& waveFormat);
+	bool IsBufferPlaying();
 
 private:
 	HRESULT InitDevice(HWND hDlg);
@@ -21,12 +22,11 @@ private:
 	HRESULT CreateBuffer(WAVEFORMATEX& waveFormat);
 	HRESULT FillBuffer(DataChunk* data);
 
-	bool IsBufferPlaying();
 	HRESULT PlayBuffer(bool bLooped, DataChunk* data);
 	HRESULT RestoreBuffers(DataChunk* data);
 
 	LPDIRECTSOUND m_pDS;
 	LPDIRECTSOUNDBUFFER m_pDSBuffer;
 
-	unsigned short m_bufferSize;
+	unsigned long m_bufferSize;
 };

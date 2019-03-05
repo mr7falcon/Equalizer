@@ -42,3 +42,5 @@ struct DataChunk
 	unsigned short size;
 	byte* data;
 };
+
+const unsigned short defaultChunkSize = 65500;
