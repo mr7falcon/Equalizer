@@ -1,8 +1,5 @@
-﻿#include <windows.h>
-#include <thread>
-#include "InputDevice.h"
+﻿#include "InputDevice.h"
 #include "OutputDevice.h"
-#include "WaveFormat.h"
 
 #pragma comment(lib, "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.17763.0\\um\\x64\\dsound.lib")
 
@@ -10,9 +7,10 @@ int main(int argc, char** argv)
 {
 	HWND hDlg = GetForegroundWindow();
 
+	InputDevice inputDevice;
 	OutputDevice outputDevice;
-	InputDevice inputDevice(&outputDevice);
-	outputDevice.SetInputDevice(&inputDevice);
+	inputDevice.SetOutput(&outputDevice);
+	outputDevice.SetOutput(&inputDevice);
 
 	WAVEFORMATEX waveFormat;
 	if (!inputDevice.OpenFile(argv[1], waveFormat))
@@ -25,10 +23,26 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	std::thread it([&]()
+	{
+		inputDevice.Run();
+	});
+	std::thread ort([&]()
+	{
+		outputDevice.Run();
+	});
+
 	for (int i = 0; i < buffersCount; ++i)
 	{
-		RequestNewDataChunk(&inputDevice);
+		inputDevice.SendNewData(new DataChunk);
 	}
 
-	Sleep(40000);
+	std::thread opt([&]()
+	{
+		outputDevice.StartPlaying();
+	});
+
+	it.join();
+	ort.join();
+	opt.join();
 }

@@ -1,6 +1,6 @@
 #include "Block.h"
 
-std::mutex g_lock;
+std::recursive_mutex g_lock;
 
 void Log(const char* str)
 {
@@ -9,21 +9,10 @@ void Log(const char* str)
 	g_lock.unlock();
 }
 
-void HandleData(Block* block, DataChunk* data)
-{
-	std::thread thd([=]()
-	{
-		if (block)
-		{
-			block->OnInput(data);
-		}
-	});
-
-	thd.detach();
-}
-
-Block::Block(Block* output)
-	:output(output)
+Block::Block()
+	:output(nullptr),
+	m_currentData(nullptr),
+	m_newData(nullptr)
 {
 }
 
@@ -31,14 +20,24 @@ Block::~Block()
 {
 }
 
-void Block::SendData(DataChunk* data) const
+void Block::SendNewData(DataChunk* newCurrentData)
 {
-	Log("Sending new data chunk");
-
-	HandleData(output, data);
+	m_newData = newCurrentData;
 }
 
-void Block::OnInput(DataChunk* data)
+void Block::Run()
 {
-	HandleDataInternal(data);
+	while (true)
+	{
+		if (m_newData)
+		{
+			g_lock.lock();
+
+			m_currentData = m_newData;
+			m_newData = nullptr;
+			HandleData();
+
+			g_lock.unlock();
+		}
+	}
 }

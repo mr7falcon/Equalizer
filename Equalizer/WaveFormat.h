@@ -64,7 +64,7 @@ struct DataChunk
 
 	~DataChunk()
 	{
-		delete(data);
+		delete[](data);
 	}
 
 	unsigned short size;

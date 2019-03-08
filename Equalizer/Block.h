@@ -4,25 +4,29 @@
 #include <thread>
 #include <dsound.h>
 #include <mutex>
+#include <windows.h>
+#include <process.h>
 #include "WaveFormat.h"
 
-extern std::mutex g_lock;
+extern std::recursive_mutex g_lock;
 
 void Log(const char* str);
 
 class Block
 {
 public:
-	Block(Block* output);
+	Block();
 	~Block();
 
-	void OnInput(DataChunk* data);
+	void SendNewData(DataChunk* newCurrentData);
+	void SetOutput(Block* output) { this->output = output; }
+	void Run();
 
 protected:
-	virtual void HandleDataInternal(DataChunk* data) = 0;
-	void SendData(DataChunk* data) const;
+	virtual void HandleData() = 0;
 
 	Block* output;
-};
 
-void HandleData(Block* block, DataChunk* data);
+	DataChunk* m_newData;
+	DataChunk* m_currentData;
+};

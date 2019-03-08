@@ -1,22 +1,6 @@
 #include "InputDevice.h"
 
-void RequestNewDataChunk(InputDevice* inputDevice)
-{
-	Log("New data chunk requesting");
-
-	std::thread thd([=]()
-	{
-		if (inputDevice)
-		{
-			inputDevice->OnNewChunkRequested();
-		}
-	});
-
-	thd.detach();
-}
-
-InputDevice::InputDevice(Block* output)
-	:Block(output)
+InputDevice::InputDevice()
 {
 }
 
@@ -57,11 +41,7 @@ DataChunk* InputDevice::FillChunk()
 {
 	DataChunk* data = new DataChunk(defaultChunkSize);
 
-	g_lock.lock();
-
 	m_file.read((char*)data->data, defaultChunkSize);
-
-	g_lock.unlock();
 
 	return data;
 }
@@ -71,7 +51,12 @@ void InputDevice::CloseFile()
 	m_file.close();
 }
 
-void InputDevice::OnNewChunkRequested()
+void InputDevice::HandleData()
 {
-	SendData(FillChunk());
+	delete(m_newData);
+	m_newData = nullptr;
+
+	m_currentData = FillChunk();
+	output->SendNewData(m_currentData);
+	m_currentData = nullptr;
 }

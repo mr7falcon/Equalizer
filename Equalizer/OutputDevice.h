@@ -16,20 +16,20 @@ public:
 
 	HRESULT Init(HWND hDlg, WAVEFORMATEX& waveFormat);
 	bool IsPlaying();
-
-	void SetInputDevice(InputDevice* inputDevice) { this->inputDevice = inputDevice; }
+	
+	void StartPlaying();
 
 private:
 	HRESULT InitDevice(HWND hDlg);
 	HRESULT FreeDirectSound();
 	HRESULT CreateBuffer(WAVEFORMATEX& waveFormat);
-	HRESULT FillBuffer(DataChunk* data);
+	HRESULT FillBuffer();
 
-	HRESULT Play(DataChunk* data);
-	HRESULT RestoreBuffers(DataChunk* data);
-	bool IsBuffersFull() const;
+	HRESULT Play();
+	HRESULT RestoreBuffers();
+//	bool IsBuffersFull() const;
 
-	void HandleDataInternal(DataChunk* data);
+	void HandleData();
 
 	LPDIRECTSOUND m_pDS;
 
@@ -39,6 +39,4 @@ private:
 	unsigned short m_rdPos;
 	unsigned short m_wtPos;
 	void Circle();
-
-	InputDevice* inputDevice;
 };
