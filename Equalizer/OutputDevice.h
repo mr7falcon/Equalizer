@@ -35,7 +35,7 @@ private:
 
 	unsigned long m_bufferSize;
 
-	std::vector<LPDIRECTSOUNDBUFFER> m_buffers;
+	std::vector<std::pair<LPDIRECTSOUNDBUFFER, bool>> m_buffers;
 	unsigned short m_rdPos;
 	unsigned short m_wtPos;
 	void Circle();

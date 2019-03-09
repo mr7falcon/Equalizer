@@ -55,8 +55,8 @@ HRESULT OutputDevice::InitDevice(HWND hDlg)
 
 HRESULT OutputDevice::FreeDirectSound()
 {
-	for (unsigned int i = 0; i < m_bufferSize; ++i)
-		SAFE_RELEASE(m_buffers[i]);
+	for (unsigned int i = 0; i < buffersCount; ++i)
+		SAFE_RELEASE(m_buffers[i].first);
 	SAFE_RELEASE(m_pDS);
 
 	CoUninitialize();
@@ -79,14 +79,14 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 	if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &lpDSBuf, NULL)))
 		return hr;
 
-	m_buffers.push_back(lpDSBuf);
+	m_buffers.push_back(std::make_pair(lpDSBuf, false));
 
 	return S_OK;
 }
 
 HRESULT OutputDevice::FillBuffer()
 {
-	if (m_buffers[m_wtPos])
+	if (m_buffers[m_wtPos].first && !m_buffers[m_wtPos].second)
 	{
 		HRESULT hr;
 
@@ -95,14 +95,16 @@ HRESULT OutputDevice::FillBuffer()
 		unsigned long dwLength;
 		unsigned long dwLength2;
 
-		if (FAILED(hr = m_buffers[m_wtPos]->Lock(0, m_bufferSize, &pbData, &dwLength,
+		if (FAILED(hr = m_buffers[m_wtPos].first->Lock(0, m_bufferSize, &pbData, &dwLength,
 			&pbData2, &dwLength2, 0L)))
 			return hr;
 
 		memcpy(pbData, m_currentData->data, m_currentData->size);
 
-		m_buffers[m_wtPos]->Unlock(pbData, m_bufferSize, NULL, 0);
+		m_buffers[m_wtPos].first->Unlock(pbData, m_bufferSize, NULL, 0);
 		pbData = NULL;
+
+		m_buffers[m_wtPos].second = true;
 
 		m_wtPos++;
 		Circle();
@@ -117,10 +119,10 @@ bool OutputDevice::IsPlaying()
 {
 	for (int i = 0; i < buffersCount; ++i)
 	{
-		if (m_buffers[i])
+		if (m_buffers[i].first)
 		{
 			unsigned long dwStatus = 0;
-			m_buffers[i]->GetStatus(&dwStatus);
+			m_buffers[i].first->GetStatus(&dwStatus);
 
 			if (dwStatus & DSBSTATUS_PLAYING)
 				return true;
@@ -134,20 +136,18 @@ HRESULT OutputDevice::Play()
 {
 	HRESULT hr;
 
-	if (FAILED(hr = RestoreBuffers()))
+// 	if (FAILED(hr = RestoreBuffers()))
+// 		return hr;
+
+	if (FAILED(hr = m_buffers[m_rdPos].first->Play(0, 0, 0)))
 		return hr;
 
-	g_lock.lock();
+	//Log("Chunk played");
 
-	if (FAILED(hr = m_buffers[m_rdPos]->Play(0, 0, 0)))
-		return hr;
-
-	Log("Chunk played");
+	m_buffers[m_rdPos].second = false;
 
 	m_rdPos++;
 	Circle();
-
-	g_lock.unlock();
 
 	output->SendNewData(m_currentData);
 	m_currentData = nullptr;
@@ -160,21 +160,21 @@ HRESULT OutputDevice::RestoreBuffers()
 	HRESULT hr;
 
 	
-	if (NULL == m_buffers[m_rdPos])
+	if (NULL == m_buffers[m_rdPos].first)
 		return S_OK;
 
 	unsigned long dwStatus;
-	if (FAILED(hr = m_buffers[m_rdPos]->GetStatus(&dwStatus)))
+	if (FAILED(hr = m_buffers[m_rdPos].first->GetStatus(&dwStatus)))
 		return hr;
 
 	if (dwStatus & DSBSTATUS_BUFFERLOST)
 	{
 		do
 		{
-			hr = m_buffers[m_rdPos]->Restore();
+			hr = m_buffers[m_rdPos].first->Restore();
 			if (hr == DSERR_BUFFERLOST)
 				Sleep(10);
-		} while (hr = m_buffers[m_rdPos]->Restore());
+		} while (hr = m_buffers[m_rdPos].first->Restore());
 
 		if (FAILED(hr = FillBuffer()))
 			return hr;
@@ -210,7 +210,7 @@ void OutputDevice::Circle()
 
 void OutputDevice::HandleData()
 {
-	Log("New data chunk received");
+	//Log("New data chunk received");
 
 	if (FAILED(FillBuffer()))
 	{
@@ -219,7 +219,7 @@ void OutputDevice::HandleData()
 		return;
 	}
 
-	Log("Buffer filled");
+	//Log("Buffer filled");
 }
 
 // bool OutputDevice::IsBuffersFull() const
@@ -242,7 +242,7 @@ void OutputDevice::StartPlaying()
 	{
 		if (!IsPlaying())
 		{
-			if (m_buffers[m_rdPos])
+			if (m_buffers[m_rdPos].second)
 			{
 				if (FAILED(Play()))
 				{
