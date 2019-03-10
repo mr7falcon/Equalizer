@@ -1,4 +1,5 @@
-﻿#include "InputDevice.h"
+﻿#include <string>
+#include "InputDevice.h"
 #include "OutputDevice.h"
 
 #pragma comment(lib, "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.17763.0\\um\\x64\\dsound.lib")
@@ -41,6 +42,25 @@ int main(int argc, char** argv)
 	{
 		outputDevice.StartPlaying();
 	});
+
+	while (true)
+	{
+		std::string command;
+		if (std::cin >> command)
+		{
+			if (command == "play")
+			{
+				outputDevice.SetPlayingAllowed(true);
+				continue;
+			}
+
+			if (command == "pause")
+			{
+				outputDevice.SetPlayingAllowed(false);
+				continue;
+			}
+		}
+	}
 
 	it.join();
 	ort.join();

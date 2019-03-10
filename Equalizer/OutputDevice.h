@@ -18,6 +18,7 @@ public:
 	bool IsPlaying();
 	
 	void StartPlaying();
+	void SetPlayingAllowed(bool allowed) { m_playingAllowed = allowed; }
 
 private:
 	HRESULT InitDevice(HWND hDlg);
@@ -39,4 +40,6 @@ private:
 	unsigned short m_rdPos;
 	unsigned short m_wtPos;
 	void Circle();
+
+	bool m_playingAllowed;
 };

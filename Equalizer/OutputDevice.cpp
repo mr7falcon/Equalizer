@@ -4,7 +4,8 @@ OutputDevice::OutputDevice()
 	:m_pDS(NULL),
 	m_bufferSize(defaultChunkSize),
 	m_rdPos(0),
-	m_wtPos(0)
+	m_wtPos(0),
+	m_playingAllowed(false)
 {
 }
 
@@ -242,15 +243,18 @@ void OutputDevice::StartPlaying()
 {
 	while (true)
 	{
-		if (!IsPlaying())
+		if (m_playingAllowed)
 		{
-			if (m_buffers[m_rdPos].second)
+			if (!IsPlaying())
 			{
-				if (FAILED(Play()))
+				if (m_buffers[m_rdPos].second)
 				{
-					Log("buffer playing error");
-					delete(m_currentData);
-					return;
+					if (FAILED(Play()))
+					{
+						Log("buffer playing error");
+						delete(m_currentData);
+						return;
+					}
 				}
 			}
 		}
