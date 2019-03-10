@@ -24,32 +24,8 @@ HRESULT OutputDevice::InitDevice(HWND hDlg)
 	if (FAILED(hr = DirectSoundCreate(NULL, &m_pDS, NULL)))
 		return hr;
 
-	if (FAILED(hr = m_pDS->SetCooperativeLevel(hDlg, DSSCL_PRIORITY)))
+	if (FAILED(hr = m_pDS->SetCooperativeLevel(hDlg, DSSCL_NORMAL)))
 		return hr;
-
-	DSBUFFERDESC dsbd;
-	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
-	dsbd.dwSize = sizeof(DSBUFFERDESC);
-	dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
-	dsbd.dwBufferBytes = 0;
-	dsbd.lpwfxFormat = NULL;
-
-	if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pDSBPrimary, NULL)))
-		return hr;
-
-	WAVEFORMATEX wfx;
-	ZeroMemory(&wfx, sizeof(WAVEFORMATEX));
-	wfx.wFormatTag = WAVE_FORMAT_PCM;
-	wfx.nChannels = 2;
-	wfx.nSamplesPerSec = 44100;
-	wfx.wBitsPerSample = 16;
-	wfx.nBlockAlign = wfx.wBitsPerSample / 8 * wfx.nChannels;
-	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-
-	if (FAILED(hr = pDSBPrimary->SetFormat(&wfx)))
-		return hr;
-		
-	SAFE_RELEASE(pDSBPrimary);
 
 	return S_OK;
 }
@@ -224,20 +200,6 @@ void OutputDevice::HandleData()
 
 	//Log("Buffer filled");
 }
-
-// bool OutputDevice::IsBuffersFull() const
-// {
-// 	for (int i = 0; i < buffersCount; ++i)
-// 	{
-// 		unsigned long status;
-// 		m_buffers[i]->GetStatus(&status);
-// 
-// 		if (status & DSBSTATUS)
-// 		
-// 	}
-// 
-// 	return true;
-// }
 
 void OutputDevice::StartPlaying()
 {

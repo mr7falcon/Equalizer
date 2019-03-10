@@ -28,7 +28,6 @@ private:
 
 	HRESULT Play();
 	HRESULT RestoreBuffers();
-//	bool IsBuffersFull() const;
 
 	void HandleData();
 
