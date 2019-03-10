@@ -86,8 +86,7 @@ HRESULT OutputDevice::FillBuffer()
 		delete(m_currentData);
 		m_currentData = nullptr;
 
-		m_wtPos++;
-		Circle();
+		m_wtPos = ++m_wtPos % buffersCount;
 
 		return S_OK;
 	}
@@ -126,8 +125,7 @@ HRESULT OutputDevice::Play()
 
 	m_buffers[m_rdPos].second = false;
 
-	m_rdPos++;
-	Circle();
+	m_rdPos = ++m_rdPos % buffersCount;
 
 	output->SendNewData(new DataChunk);
 
@@ -176,15 +174,6 @@ HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
 	}
 
 	return S_OK;
-}
-
-void OutputDevice::Circle()
-{
-	if (m_rdPos >= buffersCount)
-		m_rdPos -= buffersCount;
-
-	if (m_wtPos >= buffersCount)
-		m_wtPos -= buffersCount;
 }
 
 void OutputDevice::HandleData()

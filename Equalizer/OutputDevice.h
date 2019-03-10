@@ -38,7 +38,6 @@ private:
 	std::vector<std::pair<LPDIRECTSOUNDBUFFER, bool>> m_buffers;
 	unsigned short m_rdPos;
 	unsigned short m_wtPos;
-	void Circle();
 
 	bool m_playingAllowed;
 };
