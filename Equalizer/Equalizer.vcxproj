@@ -151,13 +151,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Block.cpp" />
     <ClCompile Include="Equalizer.cpp" />
     <ClCompile Include="InputDevice.cpp" />
     <ClCompile Include="OutputDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Block.h" />
     <ClInclude Include="InputDevice.h" />
     <ClInclude Include="OutputDevice.h" />
+    <ClInclude Include="WaveFormat.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

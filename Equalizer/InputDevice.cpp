@@ -41,6 +41,12 @@ DataChunk* InputDevice::FillChunk()
 {
 	DataChunk* data = new DataChunk(defaultChunkSize);
 
+	if (m_file.eof())
+	{
+		m_file.clear();
+		m_file.seekg(0);
+	}
+	
 	m_file.read((char*)data->data, defaultChunkSize);
 
 	return data;

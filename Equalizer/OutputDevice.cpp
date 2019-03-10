@@ -106,6 +106,9 @@ HRESULT OutputDevice::FillBuffer()
 
 		m_buffers[m_wtPos].second = true;
 
+		delete(m_currentData);
+		m_currentData = nullptr;
+
 		m_wtPos++;
 		Circle();
 
@@ -149,8 +152,7 @@ HRESULT OutputDevice::Play()
 	m_rdPos++;
 	Circle();
 
-	output->SendNewData(m_currentData);
-	m_currentData = nullptr;
+	output->SendNewData(new DataChunk);
 
 	return S_OK;
 }

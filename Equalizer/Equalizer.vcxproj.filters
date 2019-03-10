@@ -24,12 +24,21 @@
     <ClCompile Include="OutputDevice.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Block.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputDevice.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="OutputDevice.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="WaveFormat.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Block.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
