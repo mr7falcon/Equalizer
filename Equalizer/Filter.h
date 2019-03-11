@@ -26,10 +26,16 @@ class Filter : public Block
 {
 public:
 	Filter();
-	~Filter() { delete(counts); }
+	~Filter() { delete(m_counts); }
+
+	void Init(WAVEFORMATEX& format);
 
 private:
 	static const unsigned short order = 24;
+	static unsigned short bitsPerSample;
 
-	CQueue* counts;
+	short int* DecodeChunk();
+	short int* Transforming(short int* counts);
+
+	CQueue* m_counts;
 };

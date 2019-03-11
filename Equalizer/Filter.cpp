@@ -32,5 +32,35 @@ unsigned short CQueue::Dequeue()
 
 Filter::Filter()
 {
-	counts = new CQueue(order);
+	m_counts = new CQueue(order);
+}
+
+void Filter::Init(WAVEFORMATEX& format)
+{
+	bitsPerSample = format.wBitsPerSample;
+}
+
+short int* Filter::DecodeChunk()
+{
+	short int* counts = nullptr;
+
+	if (bitsPerSample > 8 && bitsPerSample <= 16)
+	{
+		int size = m_currentData->size / sizeof(short int);
+		counts = new short int[size];
+
+		for (int i = 0; i < size; ++i)
+		{
+			unsigned long j = 0;
+			counts[i] = (short int)(m_currentData->data[j + 1] << 8 | m_currentData->data[j]);
+			++j;
+		}
+	}
+		
+	return counts;
+}
+
+short int* Filter::Transforming(short int* counts)
+{
+	
 }
