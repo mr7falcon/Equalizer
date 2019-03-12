@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include "Block.h"
+#include "DataHandler.h"
 
 class InputDevice : public Block
 {
@@ -16,7 +17,8 @@ public:
 private:
 	DataChunk* FillChunk();
 
-	void HandleData();
+	void HandleEvent();
+	void HandleNewDataRequested();
 
 	std::ifstream m_file;
 

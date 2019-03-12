@@ -71,4 +71,4 @@ struct DataChunk
 	byte* data;
 };
 
-const unsigned long defaultChunkSize = 524288;
+const unsigned long defaultChunkSize = 8192;

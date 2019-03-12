@@ -12,21 +12,32 @@ extern std::recursive_mutex g_lock;
 
 void Log(const char* str);
 
+enum Events : short int
+{
+	EVENT_NEW_DATA_RECEIVED,
+	EVENT_FIRST_HALF_BUFFER_PLAYED,
+	EVENT_SECOND_HALF_BUFFER_PLAYED,
+	EVENT_NEW_DATA_REQUESTED,
+	
+	EVENT_NO_EVENTS = -1
+};
+
 class Block
 {
 public:
 	Block();
 	~Block();
 
-	void SendNewData(DataChunk* newCurrentData);
+	void OnEvent(Events event) { this->event = event; }
 	void SetOutput(Block* output) { this->output = output; }
-	void Run();
+	virtual void Run();
 
 protected:
-	virtual void HandleData() = 0;
+	virtual void HandleEvent() = 0;
 
 	Block* output;
 
-	DataChunk* m_newData;
 	DataChunk* m_currentData;
+
+	Events event;
 };

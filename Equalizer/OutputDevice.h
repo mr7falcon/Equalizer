@@ -1,14 +1,13 @@
 #pragma once
 
 #include <vector>
+#include "DataHandler.h"
 #include "InputDevice.h"
 
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
 
-static const unsigned short buffersCount = 3;
-
-class OutputDevice : public Block
+class OutputDevice : public DataHandler 
 {
 public:
 	OutputDevice();
@@ -24,20 +23,20 @@ private:
 	HRESULT InitDevice(HWND hDlg);
 	HRESULT FreeDirectSound();
 	HRESULT CreateBuffer(WAVEFORMATEX& waveFormat);
-	HRESULT FillBuffer();
+	HRESULT FillBuffer(const unsigned long startPos, const unsigned long size);
 
 	HRESULT Play();
-	HRESULT RestoreBuffers();
 
-	void HandleData();
+	void HandleEvent();
+	void HandleNewDataReceived();
+	void HandleFirstHalfBufferPlayed();
+	void HandleSecondHalfBufferPlayed();
 
 	LPDIRECTSOUND m_pDS;
 
 	unsigned long m_bufferSize;
-
-	std::vector<std::pair<LPDIRECTSOUNDBUFFER, bool>> m_buffers;
-	unsigned short m_rdPos;
-	unsigned short m_wtPos;
+	LPDIRECTSOUNDBUFFER m_buffer;
+	bool m_bufferFilled;
 
 	bool m_playingAllowed;
 };

@@ -5,14 +5,16 @@ std::recursive_mutex g_lock;
 void Log(const char* str)
 {
 	g_lock.lock();
+
 	std::cout << str << std::endl;
+
 	g_lock.unlock();
 }
 
 Block::Block()
 	:output(nullptr),
 	m_currentData(nullptr),
-	m_newData(nullptr)
+	event(EVENT_NO_EVENTS)
 {
 }
 
@@ -20,24 +22,14 @@ Block::~Block()
 {
 }
 
-void Block::SendNewData(DataChunk* newCurrentData)
-{
-	m_newData = newCurrentData;
-}
-
 void Block::Run()
 {
 	while (true)
 	{
-		if (m_newData)
+		if (event != EVENT_NO_EVENTS)
 		{
-			g_lock.lock();
-
-			m_currentData = m_newData;
-			m_newData = nullptr;
-			HandleData();
-
-			g_lock.unlock();
+			HandleEvent();
+			event = EVENT_NO_EVENTS;
 		}
 	}
 }

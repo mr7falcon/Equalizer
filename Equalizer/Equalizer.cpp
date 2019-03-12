@@ -33,10 +33,7 @@ int main(int argc, char** argv)
 		outputDevice.Run();
 	});
 
-	for (int i = 0; i < buffersCount; ++i)
-	{
-		inputDevice.SendNewData(new DataChunk);
-	}
+	SetEvent(events[EVENT_NEW_DATA_REQUESTED]);
 
 	std::thread opt([&]()
 	{

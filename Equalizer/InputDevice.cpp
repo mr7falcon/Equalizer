@@ -57,12 +57,24 @@ void InputDevice::CloseFile()
 	m_file.close();
 }
 
-void InputDevice::HandleData()
+void InputDevice::HandleEvent()
 {
-	delete(m_newData);
-	m_newData = nullptr;
+	switch (event)
+	{
+	case EVENT_NEW_DATA_REQUESTED:
+		HandleNewDataRequested();
+		break;
+	}
+}
 
+void InputDevice::HandleNewDataRequested()
+{
 	m_currentData = FillChunk();
-	output->SendNewData(m_currentData);
+
+	if (output)
+	{
+		dynamic_cast<DataHandler*>(output)->SendNewData(m_currentData);
+	}
+
 	m_currentData = nullptr;
 }
