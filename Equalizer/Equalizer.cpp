@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 		outputDevice.Run();
 	});
 
-	SetEvent(events[EVENT_NEW_DATA_REQUESTED]);
+	inputDevice.OnEvent(EVENT_NEW_DATA_REQUESTED);
 
 	std::thread opt([&]()
 	{

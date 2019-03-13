@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <thread>
+#include <initguid.h>
 #include <dsound.h>
 #include <mutex>
 #include <windows.h>
@@ -14,9 +15,9 @@ void Log(const char* str);
 
 enum Events : short int
 {
-	EVENT_NEW_DATA_RECEIVED,
 	EVENT_FIRST_HALF_BUFFER_PLAYED,
 	EVENT_SECOND_HALF_BUFFER_PLAYED,
+	EVENT_NEW_DATA_RECEIVED,
 	EVENT_NEW_DATA_REQUESTED,
 	
 	EVENT_NO_EVENTS = -1

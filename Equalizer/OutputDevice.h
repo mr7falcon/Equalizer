@@ -39,4 +39,9 @@ private:
 	bool m_bufferFilled;
 
 	bool m_playingAllowed;
+
+	HANDLE* bufferEvents;
+	static const short int bufferEventCount = 2;
+
+	void InitBufferEvents();
 };

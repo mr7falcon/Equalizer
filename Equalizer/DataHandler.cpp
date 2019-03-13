@@ -14,7 +14,7 @@ void DataHandler::SendNewData(DataChunk* newCurrentData)
 	g_lock.lock();
 
 	m_newData = newCurrentData;
-	SetEvent(events[EVENT_NEW_DATA_RECEIVED]);
+	OnEvent(EVENT_NEW_DATA_RECEIVED);
 
 	g_lock.unlock();
 }

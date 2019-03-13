@@ -5,12 +5,15 @@ OutputDevice::OutputDevice()
 	m_bufferSize(defaultChunkSize),
 	m_buffer(nullptr),
 	m_playingAllowed(false),
-	m_bufferFilled(false)
+	m_bufferFilled(false),
+	bufferEvents(nullptr)
 {
+	InitBufferEvents();
 }
 
 OutputDevice::~OutputDevice()
 {
+	delete[](bufferEvents);
 }
 
 HRESULT OutputDevice::InitDevice(HWND hDlg)
@@ -56,6 +59,24 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 		return hr;
 
 	m_buffer = lpDSBuf;
+
+	IDirectSoundNotify* pDSNotify;
+	if (FAILED(hr = m_buffer->QueryInterface(IID_IDirectSoundNotify,
+		(void**)&pDSNotify)))
+	{
+		return hr;
+	}
+		
+	DSBPOSITIONNOTIFY dspn[bufferEventCount];
+	dspn[EVENT_FIRST_HALF_BUFFER_PLAYED].dwOffset = m_bufferSize / 2 - 1;
+	dspn[EVENT_FIRST_HALF_BUFFER_PLAYED].hEventNotify = bufferEvents[EVENT_FIRST_HALF_BUFFER_PLAYED];
+	dspn[EVENT_SECOND_HALF_BUFFER_PLAYED].dwOffset = m_bufferSize - 1;
+	dspn[EVENT_SECOND_HALF_BUFFER_PLAYED].hEventNotify = bufferEvents[EVENT_SECOND_HALF_BUFFER_PLAYED];
+
+	if (FAILED(hr = pDSNotify->SetNotificationPositions(bufferEventCount, dspn)))
+	{
+		return hr;
+	}
 
 	return S_OK;
 }
@@ -142,20 +163,16 @@ void OutputDevice::StartPlaying()
 			}
 			else
 			{
-				unsigned long rdPos;
-				unsigned long wrPos;
+				unsigned long retVal, eventNum;
 
-				if (FAILED(m_buffer->GetCurrentPosition(&rdPos, &wrPos)))
-					continue;
-
-				if (rdPos == m_bufferSize / 2)
+				retVal = WaitForMultipleObjects(bufferEventCount, bufferEvents, FALSE, INFINITE);
 				{
-					OnEvent(EVENT_FIRST_HALF_BUFFER_PLAYED);
-				}
-
-				if (rdPos == 0)
-				{
-					OnEvent(EVENT_SECOND_HALF_BUFFER_PLAYED);
+					if (retVal != WAIT_FAILED)
+					{
+						eventNum = retVal - WAIT_OBJECT_0;
+						OnEvent(Events(eventNum));
+						ResetEvent(bufferEvents[eventNum]);
+					}
 				}
 			}
 		}
@@ -220,4 +237,11 @@ void OutputDevice::HandleSecondHalfBufferPlayed()
 	{
 		output->OnEvent(EVENT_NEW_DATA_REQUESTED);
 	}
+}
+
+void OutputDevice::InitBufferEvents()
+{
+	bufferEvents = new HANDLE[2];
+	bufferEvents[EVENT_FIRST_HALF_BUFFER_PLAYED] = CreateEvent(NULL, true, false, LPWSTR("FirstHalfPlayed"));
+	bufferEvents[EVENT_SECOND_HALF_BUFFER_PLAYED] = CreateEvent(NULL, true, false, LPWSTR("SecondHalfPlayed"));
 }
