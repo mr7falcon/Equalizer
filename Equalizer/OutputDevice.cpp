@@ -2,11 +2,11 @@
 
 OutputDevice::OutputDevice()
 	:m_pDS(NULL),
-	m_bufferSize(defaultChunkSize),
+	m_bufferSize(defaultChunkSize * sectionCount),
 	m_buffer(nullptr),
 	m_playingAllowed(false),
-	m_bufferFilled(false),
-	bufferEvents(nullptr)
+	bufferEvents(nullptr),
+	m_currentSection(0)
 {
 	InitBufferEvents();
 }
@@ -67,13 +67,15 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 		return hr;
 	}
 		
-	DSBPOSITIONNOTIFY dspn[bufferEventCount];
-	dspn[EVENT_FIRST_HALF_BUFFER_PLAYED].dwOffset = m_bufferSize / 2 - 1;
-	dspn[EVENT_FIRST_HALF_BUFFER_PLAYED].hEventNotify = bufferEvents[EVENT_FIRST_HALF_BUFFER_PLAYED];
-	dspn[EVENT_SECOND_HALF_BUFFER_PLAYED].dwOffset = m_bufferSize - 1;
-	dspn[EVENT_SECOND_HALF_BUFFER_PLAYED].hEventNotify = bufferEvents[EVENT_SECOND_HALF_BUFFER_PLAYED];
+	DSBPOSITIONNOTIFY dspn[sectionCount];
+	const unsigned long sectionSize = m_bufferSize / sectionCount;
+	for (unsigned short i = sectionCount; i > 0; --i)
+	{
+		dspn[i - 1].dwOffset = i * sectionSize - 1;
+		dspn[i - 1].hEventNotify = bufferEvents[i - 1];
+	}
 
-	if (FAILED(hr = pDSNotify->SetNotificationPositions(bufferEventCount, dspn)))
+	if (FAILED(hr = pDSNotify->SetNotificationPositions(sectionCount, dspn)))
 	{
 		return hr;
 	}
@@ -81,7 +83,7 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 	return S_OK;
 }
 
-HRESULT OutputDevice::FillBuffer(const unsigned long startPos, const unsigned long size)
+HRESULT OutputDevice::FillBuffer(const unsigned long startPos)
 {
 	if (m_buffer && m_currentData)
 	{
@@ -92,12 +94,13 @@ HRESULT OutputDevice::FillBuffer(const unsigned long startPos, const unsigned lo
 		unsigned long dwLength;
 		unsigned long dwLength2;
 
+		const unsigned long size = m_currentData->size;
+
 		if (FAILED(hr = m_buffer->Lock(startPos, size, &pbData, &dwLength,
 			&pbData2, &dwLength2, 0L)))
 			return hr;
 
-		byte* data = m_currentData->data + startPos;
-		memcpy(pbData, data, size);
+		memcpy(pbData, m_currentData->data, size);
 
 		if (FAILED(hr = m_buffer->Unlock(pbData, dwLength, pbData2, dwLength2)))
 			return hr;
@@ -152,28 +155,23 @@ void OutputDevice::StartPlaying()
 		{
 			if (!IsPlaying())
 			{
-				if (m_bufferFilled)
+				if (FAILED(Play()))
 				{
-					if (FAILED(Play()))
-					{
-						Log("buffer playing error");
-						delete(m_currentData);
-						return;
-					}
+					Log("buffer playing error");
+					delete(m_currentData);
+					return;
 				}
 			}
 			else
 			{
 				unsigned long retVal, eventNum;
 
-				retVal = WaitForMultipleObjects(bufferEventCount, bufferEvents, FALSE, INFINITE);
+				retVal = WaitForMultipleObjects(sectionCount, bufferEvents, FALSE, INFINITE);
+				if (retVal != WAIT_FAILED)
 				{
-					if (retVal != WAIT_FAILED)
-					{
-						eventNum = retVal - WAIT_OBJECT_0;
-						OnEvent(Events(eventNum));
-						ResetEvent(bufferEvents[eventNum]);
-					}
+					eventNum = retVal - WAIT_OBJECT_0;
+					OnEvent(EVENT_SECTION_PLAYED);
+					ResetEvent(bufferEvents[eventNum]);
 				}
 			}
 		}
@@ -187,11 +185,8 @@ void OutputDevice::HandleEvent()
 	case EVENT_NEW_DATA_RECEIVED:
 		HandleNewDataReceived();
 		break;
-	case EVENT_FIRST_HALF_BUFFER_PLAYED:
-		HandleFirstHalfBufferPlayed();
-		break;
-	case EVENT_SECOND_HALF_BUFFER_PLAYED:
-		HandleSecondHalfBufferPlayed();
+	case EVENT_SECTION_PLAYED:
+		HandleSectionPlayed();
 		break;
 	}
 }
@@ -200,36 +195,29 @@ void OutputDevice::HandleNewDataReceived()
 {
 	ApplyNewData();
 
-	if (!m_bufferFilled)
+	if (!IsPlaying() && !m_playingAllowed)
 	{
-		FillBuffer(0, m_bufferSize);
+		HandleSectionPlayed();
 
-		m_bufferFilled = true;
-
-		delete(m_currentData);
-		m_currentData = nullptr;
-
-		if (output)
+		if (m_currentSection == 0)
 		{
-			output->OnEvent(EVENT_NEW_DATA_REQUESTED);
+			m_playingAllowed = true;
 		}
 	}
 }
 
-void OutputDevice::HandleFirstHalfBufferPlayed()
+void OutputDevice::HandleSectionPlayed()
 {
-	if (!IsPlaying())
+	if (!m_currentData)
+	{
+		m_playingAllowed = false;
 		return;
+	}
 
-	FillBuffer(0, m_bufferSize / 2);
-}
+	const unsigned long sectionSize = m_bufferSize / sectionCount;
 
-void OutputDevice::HandleSecondHalfBufferPlayed()
-{
-	if (!IsPlaying())
-		return;
-
-	FillBuffer(m_bufferSize / 2, m_bufferSize / 2);
+	FillBuffer((sectionSize) * m_currentSection);
+	m_currentSection = ++m_currentSection % sectionCount;
 
 	delete(m_currentData);
 	m_currentData = nullptr;
@@ -242,7 +230,10 @@ void OutputDevice::HandleSecondHalfBufferPlayed()
 
 void OutputDevice::InitBufferEvents()
 {
-	bufferEvents = new HANDLE[2];
-	bufferEvents[EVENT_FIRST_HALF_BUFFER_PLAYED] = CreateEvent(NULL, true, false, LPWSTR("FirstHalfPlayed"));
-	bufferEvents[EVENT_SECOND_HALF_BUFFER_PLAYED] = CreateEvent(NULL, true, false, LPWSTR("SecondHalfPlayed"));
+	bufferEvents = new HANDLE[sectionCount];
+	
+	for (unsigned short i = 0; i < sectionCount; ++i)
+	{
+		bufferEvents[i] = CreateEvent(NULL, true, false, LPWSTR("PositionAchieved"));
+	}
 }

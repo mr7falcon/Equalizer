@@ -45,17 +45,7 @@ int main(int argc, char** argv)
 		std::string command;
 		if (std::cin >> command)
 		{
-			if (command == "play")
-			{
-				outputDevice.SetPlayingAllowed(true);
-				continue;
-			}
 
-			if (command == "pause")
-			{
-				outputDevice.SetPlayingAllowed(false);
-				continue;
-			}
 		}
 	}
 

@@ -7,6 +7,8 @@
 #define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
 
+const unsigned short sectionCount = 4;
+
 class OutputDevice : public DataHandler 
 {
 public:
@@ -23,25 +25,24 @@ private:
 	HRESULT InitDevice(HWND hDlg);
 	HRESULT FreeDirectSound();
 	HRESULT CreateBuffer(WAVEFORMATEX& waveFormat);
-	HRESULT FillBuffer(const unsigned long startPos, const unsigned long size);
+	HRESULT FillBuffer(const unsigned long startPos);
 
 	HRESULT Play();
 
 	void HandleEvent();
 	void HandleNewDataReceived();
-	void HandleFirstHalfBufferPlayed();
-	void HandleSecondHalfBufferPlayed();
+	void HandleSectionPlayed();
 
 	LPDIRECTSOUND m_pDS;
 
 	unsigned long m_bufferSize;
 	LPDIRECTSOUNDBUFFER m_buffer;
-	bool m_bufferFilled;
+
+	unsigned short m_currentSection;
 
 	bool m_playingAllowed;
 
 	HANDLE* bufferEvents;
-	static const short int bufferEventCount = 2;
 
 	void InitBufferEvents();
 };
