@@ -96,10 +96,11 @@ HRESULT OutputDevice::FillBuffer(const unsigned long startPos, const unsigned lo
 			&pbData2, &dwLength2, 0L)))
 			return hr;
 
-		void* data = m_currentData->data + startPos;
+		byte* data = m_currentData->data + startPos;
 		memcpy(pbData, data, size);
 
-		m_buffer->Unlock(pbData, dwLength, pbData2, dwLength2);
+		if (FAILED(hr = m_buffer->Unlock(pbData, dwLength, pbData2, dwLength2)))
+			return hr;
 
 		return S_OK;
 	}
@@ -122,7 +123,7 @@ HRESULT OutputDevice::Play()
 {
 	HRESULT hr;
 
-	if (FAILED(hr = m_buffer->Play(0, 0, 0)))
+	if (FAILED(hr = m_buffer->Play(0, 0, DSBPLAY_LOOPING)))
 		return hr;
 
 	//Log("Chunk played");
