@@ -14,6 +14,7 @@ public:
 	~DataHandler();
 
 	void SendNewData(DataChunk* newCurrentData);
+	bool IsProcessingData() { return m_currentData != nullptr; }
 
 	void SetOutput(Block* output) { this->output = output; }
 protected:

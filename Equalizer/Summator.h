@@ -11,6 +11,8 @@ public:
 private:
 	void HandleEvent();
 
+	void Reallocate();
+
 	const unsigned short numOfBands;
 
 	DataChunk* m_summ;

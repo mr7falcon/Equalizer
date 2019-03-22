@@ -4,12 +4,6 @@ Summator::Summator(const unsigned short numOfBands)
 	:numOfBands(numOfBands),
 	m_numOfChunks(0)
 {
-	m_summ = new DataChunk(defaultChunkSize);
-
-	for (unsigned long i = 0; i < m_summ->size; ++i)
-	{
-		m_summ->data[i] = 0;
-	}
 }
 
 Summator::~Summator()
@@ -22,6 +16,11 @@ void Summator::HandleEvent()
 	switch (event)
 	{
 	case EVENT_NEW_DATA_RECEIVED:
+		if (m_numOfChunks == 0)
+		{
+			Reallocate();
+		}
+
 		for (unsigned long i = 0; i < m_currentData->size; ++i)
 		{
 			m_summ->data[i] += m_currentData->data[i];
@@ -47,5 +46,15 @@ void Summator::HandleEvent()
 		}
 
 		break;
+	}
+}
+
+void Summator::Reallocate()
+{
+	m_summ = new DataChunk(defaultChunkSize);
+
+	for (unsigned long i = 0; i < m_summ->size; ++i)
+	{
+		m_summ->data[i] = 0;
 	}
 }

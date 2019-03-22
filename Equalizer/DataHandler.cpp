@@ -15,9 +15,11 @@ DataHandler::~DataHandler()
 void DataHandler::SendNewData(DataChunk* newCurrentData)
 {
 	std::unique_lock<std::mutex> locker(g_lock);
+	if (IsProcessingData())
+	{
+		g_dataProcessed.wait(locker);
+	}
 
 	m_currentData = newCurrentData;
 	OnEvent(EVENT_NEW_DATA_RECEIVED);
-
-	g_dataProcessed.wait(locker);
 }
