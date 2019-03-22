@@ -1,6 +1,11 @@
 #pragma once
 
 #include "Block.h"
+#include <mutex>
+#include <condition_variable>
+
+extern std::mutex g_lock;
+extern std::condition_variable g_dataProcessed;
 
 class DataHandler : public Block
 {
@@ -9,8 +14,8 @@ public:
 	~DataHandler();
 
 	void SendNewData(DataChunk* newCurrentData);
-protected:
-	void ApplyNewData();
 
-	DataChunk* m_newData;
+	void SetOutput(Block* output) { this->output = output; }
+protected:
+	Block* output;
 };

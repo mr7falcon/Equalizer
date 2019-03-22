@@ -1,10 +1,6 @@
-// #include "IIR.h"
-// 
-// IIR::IIR()
-// {
-// }
-// 
-// void IIR::HandleData()
-// {
-// 	
-// }
+ #include "IIR.h"
+ 
+ IIR::IIR(const unsigned short num)
+	 :Filter(num)
+ {
+ }

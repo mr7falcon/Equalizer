@@ -59,7 +59,13 @@ struct DataChunk
 	DataChunk(unsigned long size)
 		:size(size)
 	{
-		data = new byte[size];
+		data = new short[size];
+	}
+
+	DataChunk(unsigned long size, short* data)
+		:size(size),
+		data(data)
+	{
 	}
 
 	~DataChunk()
@@ -68,7 +74,7 @@ struct DataChunk
 	}
 
 	unsigned long size;
-	byte* data;
+	short* data;
 };
 
-const unsigned long defaultChunkSize = 2048;
+const unsigned long defaultChunkSize = 32768;

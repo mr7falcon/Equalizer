@@ -4,12 +4,9 @@
 #include <thread>
 #include <initguid.h>
 #include <dsound.h>
-#include <mutex>
 #include <windows.h>
 #include <process.h>
 #include "WaveFormat.h"
-
-extern std::recursive_mutex g_lock;
 
 void Log(const char* str);
 
@@ -26,16 +23,14 @@ class Block
 {
 public:
 	Block();
-	~Block();
+	virtual ~Block();
 
 	void OnEvent(Events event) { this->event = event; }
-	void SetOutput(Block* output) { this->output = output; }
+	virtual void SetOutput(Block* output) = 0;
 	virtual void Run();
 
 protected:
 	virtual void HandleEvent() = 0;
-
-	Block* output;
 
 	DataChunk* m_currentData;
 

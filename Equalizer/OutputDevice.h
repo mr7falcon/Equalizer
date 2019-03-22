@@ -33,10 +33,14 @@ private:
 	void HandleNewDataReceived();
 	void HandleSectionPlayed();
 
+	byte* EncodeChunk(const DataChunk* newChunk = nullptr);
+
 	LPDIRECTSOUND m_pDS;
 
 	unsigned long m_bufferSize;
 	LPDIRECTSOUNDBUFFER m_buffer;
+
+	byte* m_encodedCurrentData;
 
 	unsigned short m_currentSection;
 

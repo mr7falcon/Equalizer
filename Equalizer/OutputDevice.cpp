@@ -2,8 +2,9 @@
 
 OutputDevice::OutputDevice()
 	:m_pDS(NULL),
-	m_bufferSize(defaultChunkSize * sectionCount),
+	m_bufferSize(defaultChunkSize * 2 * sectionCount),
 	m_buffer(nullptr),
+	m_encodedCurrentData(nullptr),
 	m_playingAllowed(false),
 	bufferEvents(nullptr),
 	m_currentSection(0)
@@ -69,7 +70,7 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 		
 	DSBPOSITIONNOTIFY dspn[sectionCount];
 	const unsigned long sectionSize = m_bufferSize / sectionCount;
-	for (unsigned short i = sectionCount; i > 0; --i)
+	for (unsigned short i = 1; i <= sectionCount; ++i)
 	{
 		dspn[i - 1].dwOffset = i * sectionSize - 1;
 		dspn[i - 1].hEventNotify = bufferEvents[i - 1];
@@ -85,7 +86,7 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 
 HRESULT OutputDevice::FillBuffer(const unsigned long startPos)
 {
-	if (m_buffer && m_currentData)
+	if (m_buffer && m_encodedCurrentData)
 	{
 		HRESULT hr;
 
@@ -94,13 +95,13 @@ HRESULT OutputDevice::FillBuffer(const unsigned long startPos)
 		unsigned long dwLength;
 		unsigned long dwLength2;
 
-		const unsigned long size = m_currentData->size;
+		const unsigned long size = defaultChunkSize * 2;
 
 		if (FAILED(hr = m_buffer->Lock(startPos, size, &pbData, &dwLength,
 			&pbData2, &dwLength2, 0L)))
 			return hr;
 
-		memcpy(pbData, m_currentData->data, size);
+		memcpy(pbData, m_encodedCurrentData, size);
 
 		if (FAILED(hr = m_buffer->Unlock(pbData, dwLength, pbData2, dwLength2)))
 			return hr;
@@ -158,7 +159,6 @@ void OutputDevice::StartPlaying()
 				if (FAILED(Play()))
 				{
 					Log("buffer playing error");
-					delete(m_currentData);
 					return;
 				}
 			}
@@ -193,7 +193,12 @@ void OutputDevice::HandleEvent()
 
 void OutputDevice::HandleNewDataReceived()
 {
-	ApplyNewData();
+	m_encodedCurrentData = EncodeChunk(m_currentData);
+
+	delete(m_currentData);
+	m_currentData = nullptr;
+
+	g_dataProcessed.notify_one();
 
 	if (!IsPlaying() && !m_playingAllowed)
 	{
@@ -208,7 +213,7 @@ void OutputDevice::HandleNewDataReceived()
 
 void OutputDevice::HandleSectionPlayed()
 {
-	if (!m_currentData)
+	if (!m_encodedCurrentData)
 	{
 		m_playingAllowed = false;
 		return;
@@ -216,11 +221,12 @@ void OutputDevice::HandleSectionPlayed()
 
 	const unsigned long sectionSize = m_bufferSize / sectionCount;
 
-	FillBuffer((sectionSize) * m_currentSection);
-	m_currentSection = ++m_currentSection % sectionCount;
+	FillBuffer(sectionSize * m_currentSection);
 
-	delete(m_currentData);
-	m_currentData = nullptr;
+	delete[](m_encodedCurrentData);
+	m_encodedCurrentData = nullptr;
+
+	m_currentSection = ++m_currentSection % sectionCount;
 
 	if (output)
 	{
@@ -236,4 +242,19 @@ void OutputDevice::InitBufferEvents()
 	{
 		bufferEvents[i] = CreateEvent(NULL, true, false, LPWSTR("PositionAchieved"));
 	}
+}
+
+byte* OutputDevice::EncodeChunk(const DataChunk* newChunk)
+{
+	byte* data = new byte[newChunk->size * 2];
+
+	int j = 0;
+	for (unsigned long i = 0; i < newChunk->size; ++i)
+	{
+		data[j] = (byte)(newChunk->data[i]);
+		data[++j] = (byte)(newChunk->data[i] >> 8);
+		++j;
+	}
+
+	return data;
 }

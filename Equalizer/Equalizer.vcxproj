@@ -75,6 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>C:\Users\mrfal\source\repos\Equalizer\Equalizer\fftw;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -159,6 +160,7 @@
     <ClCompile Include="IIR.cpp" />
     <ClCompile Include="InputDevice.cpp" />
     <ClCompile Include="OutputDevice.cpp" />
+    <ClCompile Include="Summator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Block.h" />
@@ -168,6 +170,7 @@
     <ClInclude Include="IIR.h" />
     <ClInclude Include="InputDevice.h" />
     <ClInclude Include="OutputDevice.h" />
+    <ClInclude Include="Summator.h" />
     <ClInclude Include="WaveFormat.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,7 +1,10 @@
 #include "DataHandler.h"
 
+std::mutex g_lock;
+std::condition_variable g_dataProcessed;
+
 DataHandler::DataHandler()
-	:m_newData(nullptr)
+	:output(nullptr)
 {
 }
 
@@ -11,20 +14,10 @@ DataHandler::~DataHandler()
 
 void DataHandler::SendNewData(DataChunk* newCurrentData)
 {
-	g_lock.lock();
+	std::unique_lock<std::mutex> locker(g_lock);
 
-	m_newData = newCurrentData;
+	m_currentData = newCurrentData;
 	OnEvent(EVENT_NEW_DATA_RECEIVED);
 
-	g_lock.unlock();
-}
-
-void DataHandler::ApplyNewData()
-{
-	g_lock.lock();
-
-	m_currentData = m_newData;
-	m_newData = nullptr;
-
-	g_lock.unlock();
+	g_dataProcessed.wait(locker);
 }
