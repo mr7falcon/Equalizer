@@ -2,7 +2,10 @@
 
 void Log(const char* str)
 {
+	std::mutex m;
+	m.lock();
 	std::cout << str << std::endl;
+	m.unlock();
 }
 
 Block::Block()
@@ -40,5 +43,5 @@ void Block::OnEvent(Events event)
 
 	this->event = event;
 
-	g_eventReceived.notify_all();
+	g_eventReceived.notify_one();
 }

@@ -4,7 +4,6 @@ OutputDevice::OutputDevice()
 	:m_pDS(NULL),
 	m_bufferSize(defaultChunkSize * 2 * sectionCount),
 	m_buffer(nullptr),
-	m_encodedCurrentData(nullptr),
 	m_playingAllowed(false),
 	bufferEvents(nullptr),
 	m_currentSection(0)
@@ -84,9 +83,9 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 	return S_OK;
 }
 
-HRESULT OutputDevice::FillBuffer(const unsigned long startPos)
+HRESULT OutputDevice::FillBuffer(const unsigned long startPos, const byte* data)
 {
-	if (m_buffer && m_encodedCurrentData)
+	if (m_buffer)
 	{
 		HRESULT hr;
 
@@ -101,7 +100,7 @@ HRESULT OutputDevice::FillBuffer(const unsigned long startPos)
 			&pbData2, &dwLength2, 0L)))
 			return hr;
 
-		memcpy(pbData, m_encodedCurrentData, size);
+		memcpy(pbData, data, size);
 
 		if (FAILED(hr = m_buffer->Unlock(pbData, dwLength, pbData2, dwLength2)))
 			return hr;
@@ -193,18 +192,20 @@ void OutputDevice::HandleNewDataReceived()
 {
 	std::unique_lock<std::mutex> locker(g_dataLock);
 
-	m_encodedCurrentData = EncodeChunk(m_currentData);
+	const byte* encodedData = EncodeChunk(m_currentData);
 
 	delete(m_currentData);
 	m_currentData = nullptr;
 
-	g_dataProcessed.notify_all();
+	g_dataProcessed.notify_one();
 
-	if (!IsPlaying() && !m_playingAllowed)
+	m_swapBuffer.WriteSwapSection(encodedData);
+
+	if (!m_playingAllowed)
 	{
 		HandleSectionPlayed();
 
-		if (m_currentSection == 0)
+		if (m_currentSection == 0 && m_swapBuffer.GetWritePos() == 0)
 		{
 			m_playingAllowed = true;
 		}
@@ -213,20 +214,15 @@ void OutputDevice::HandleNewDataReceived()
 
 void OutputDevice::HandleSectionPlayed()
 {
-	if (!m_encodedCurrentData)
+	const byte* swapData = m_swapBuffer.ReadSwapSection();
+
+	if (!swapData)
 	{
 		m_playingAllowed = false;
 		return;
 	}
 
-	const unsigned long sectionSize = m_bufferSize / sectionCount;
-
-	FillBuffer(sectionSize * m_currentSection);
-
-	delete[](m_encodedCurrentData);
-	m_encodedCurrentData = nullptr;
-
-	m_currentSection = ++m_currentSection % sectionCount;
+	FillBufferSection(swapData);
 
 	if (output)
 	{
@@ -258,4 +254,46 @@ byte* OutputDevice::EncodeChunk(const DataChunk* newChunk)
 	}
 
 	return data;
+}
+
+HRESULT OutputDevice::FillBufferSection(const byte* data)
+{
+	const unsigned long sectionSize = m_bufferSize / sectionCount;
+
+	if (FAILED(FillBuffer(sectionSize * m_currentSection, data)))
+	{
+		return S_FALSE;
+	}
+
+	delete[](data);
+
+	m_currentSection = ++m_currentSection % sectionCount;
+
+	return S_OK;
+}
+
+SwapBuffer::SwapBuffer()
+	:rdpos(0),
+	wtpos(0)
+{
+	swapData = new const byte*[sectionCount];
+}
+
+SwapBuffer::~SwapBuffer()
+{
+	delete[](swapData);
+}
+
+const byte* SwapBuffer::ReadSwapSection()
+{
+	const byte* data = swapData[rdpos];
+	rdpos = ++rdpos % sectionCount;
+
+	return data;
+}
+
+void SwapBuffer::WriteSwapSection(const byte* data)
+{
+	swapData[wtpos] = data;
+	wtpos = ++wtpos % sectionCount;
 }

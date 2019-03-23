@@ -49,7 +49,7 @@ void Filter::HandleEvent()
 		DataChunk* filteredData = new DataChunk(m_currentData->size, filteredCounts);
 
 		m_currentData = nullptr;
-		g_dataProcessed.notify_all();
+		g_dataProcessed.notify_one();
 
 		if (output)
 		{

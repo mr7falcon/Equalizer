@@ -33,7 +33,7 @@ void Summator::HandleEvent()
 
 		delete(m_currentData);
 		m_currentData = nullptr;
-		g_dataProcessed.notify_all();
+		g_dataProcessed.notify_one();
 
 		m_numOfChunks = ++m_numOfChunks % numOfBands;
 
