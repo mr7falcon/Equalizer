@@ -6,7 +6,12 @@
 #include <dsound.h>
 #include <windows.h>
 #include <process.h>
+#include <mutex>
+#include <condition_variable>
 #include "WaveFormat.h"
+
+extern std::mutex g_eventLock;
+extern std::condition_variable g_eventReceived;
 
 void Log(const char* str);
 
@@ -25,7 +30,7 @@ public:
 	Block();
 	virtual ~Block();
 
-	void OnEvent(Events event) { this->event = event; }
+	void OnEvent(Events event);
 	virtual void SetOutput(Block* output) = 0;
 	virtual void Run();
 

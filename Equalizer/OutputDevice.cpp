@@ -130,8 +130,6 @@ HRESULT OutputDevice::Play()
 	if (FAILED(hr = m_buffer->Play(0, 0, DSBPLAY_LOOPING)))
 		return hr;
 
-	//Log("Chunk played");
-
 	return S_OK;
 }
 

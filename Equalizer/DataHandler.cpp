@@ -1,6 +1,6 @@
 #include "DataHandler.h"
 
-std::mutex g_lock;
+std::mutex g_dataLock;
 std::condition_variable g_dataProcessed;
 
 DataHandler::DataHandler()
@@ -14,7 +14,7 @@ DataHandler::~DataHandler()
 
 void DataHandler::SendNewData(DataChunk* newCurrentData)
 {
-	std::unique_lock<std::mutex> locker(g_lock);
+	std::unique_lock<std::mutex> locker(g_dataLock);
 	if (IsProcessingData())
 	{
 		g_dataProcessed.wait(locker);

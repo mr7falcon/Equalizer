@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Block.h"
-#include <mutex>
-#include <condition_variable>
 
-extern std::mutex g_lock;
+extern std::mutex g_dataLock;
 extern std::condition_variable g_dataProcessed;
 
 class DataHandler : public Block

@@ -38,11 +38,6 @@ void Summator::HandleEvent()
 			{
 				dynamic_cast<DataHandler*>(output)->SendNewData(m_summ);
 			}
-
-			for (unsigned long i = 0; i < m_summ->size; ++i)
-			{
-				m_summ->data[i] = 0;
-			}
 		}
 
 		break;
