@@ -24,12 +24,13 @@ Block::~Block()
 
 void Block::Run()
 {
+ 	std::unique_lock<std::mutex> locker(g_eventLock);
+	
 	while (true)
 	{
-		if (event == EVENT_NO_EVENTS)
+		while (event == EVENT_NO_EVENTS)
 		{
-			std::unique_lock<std::mutex> locker(g_eventLock);
-			g_eventReceived.wait(locker);
+ 			g_eventReceived.wait(locker);
 		}
 
 		HandleEvent();

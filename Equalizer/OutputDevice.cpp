@@ -70,10 +70,10 @@ HRESULT OutputDevice::CreateBuffer(WAVEFORMATEX& waveFormat)
 		
 	DSBPOSITIONNOTIFY dspn[sectionCount];
 	const unsigned long sectionSize = m_bufferSize / sectionCount;
-	for (unsigned short i = 1; i <= sectionCount; ++i)
+	for (unsigned short i = 0; i < sectionCount; ++i)
 	{
-		dspn[i - 1].dwOffset = i * sectionSize - 1;
-		dspn[i - 1].hEventNotify = bufferEvents[i - 1];
+		dspn[i].dwOffset = (i + 1) * sectionSize - 1;
+		dspn[i].hEventNotify = bufferEvents[i];
 	}
 
 	if (FAILED(hr = pDSNotify->SetNotificationPositions(sectionCount, dspn)))
@@ -238,7 +238,8 @@ void OutputDevice::InitBufferEvents()
 	
 	for (unsigned short i = 0; i < sectionCount; ++i)
 	{
-		bufferEvents[i] = CreateEvent(NULL, true, false, LPWSTR("PositionAchieved"));
+		std::string str = std::to_string(i);
+		bufferEvents[i] = CreateEvent(NULL, true, false, LPWSTR(str.c_str()));
 	}
 }
 
