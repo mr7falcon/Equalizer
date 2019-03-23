@@ -1,8 +1,5 @@
 #include "Block.h"
 
-std::mutex g_eventLock;
-std::condition_variable g_eventReceived;
-
 void Log(const char* str)
 {
 	std::cout << str << std::endl;
@@ -24,10 +21,9 @@ Block::~Block()
 
 void Block::Run()
 {
- 	std::unique_lock<std::mutex> locker(g_eventLock);
-	
 	while (true)
 	{
+ 		std::unique_lock<std::mutex> locker(g_eventLock);
 		while (event == EVENT_NO_EVENTS)
 		{
  			g_eventReceived.wait(locker);
@@ -40,6 +36,9 @@ void Block::Run()
 
 void Block::OnEvent(Events event)
 {
+	std::unique_lock<std::mutex> locker(g_eventLock);
+
 	this->event = event;
+
 	g_eventReceived.notify_all();
 }

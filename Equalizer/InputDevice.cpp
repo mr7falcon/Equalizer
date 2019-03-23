@@ -72,6 +72,11 @@ void InputDevice::HandleEvent()
 
 void InputDevice::HandleNewDataRequested()
 {
+	if (m_currentData)
+	{
+		delete(m_currentData);
+	}
+
 	m_currentData = FillChunk();
 
 	for (int i = 0; i < outputs.size(); ++i)

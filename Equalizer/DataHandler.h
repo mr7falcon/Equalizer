@@ -2,9 +2,6 @@
 
 #include "Block.h"
 
-extern std::mutex g_dataLock;
-extern std::condition_variable g_dataProcessed;
-
 class DataHandler : public Block
 {
 public:
@@ -17,4 +14,7 @@ public:
 	void SetOutput(Block* output) { this->output = output; }
 protected:
 	Block* output;
+
+	std::mutex g_dataLock;
+	std::condition_variable g_dataProcessed;
 };

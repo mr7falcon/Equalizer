@@ -191,12 +191,14 @@ void OutputDevice::HandleEvent()
 
 void OutputDevice::HandleNewDataReceived()
 {
+	std::unique_lock<std::mutex> locker(g_dataLock);
+
 	m_encodedCurrentData = EncodeChunk(m_currentData);
 
 	delete(m_currentData);
 	m_currentData = nullptr;
 
-	g_dataProcessed.notify_one();
+	g_dataProcessed.notify_all();
 
 	if (!IsPlaying() && !m_playingAllowed)
 	{

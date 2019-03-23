@@ -1,35 +1,5 @@
 #include "Filter.h"
 
-// CQueue::CQueue(const int size)
-// 	:bufferSize(size),
-// 	head(0),
-// 	tail(0)
-// {
-// 	buffer = new unsigned short[bufferSize];
-// }
-// 
-// void CQueue::Enqueue(const unsigned short a)
-// {
-// 	if ((tail + 1) % bufferSize != head)
-// 	{
-// 		buffer[tail] = a;
-// 		tail = ++tail % bufferSize;
-// 	}
-// }
-// 
-// unsigned short CQueue::Dequeue()
-// {
-// 	if (head != tail)
-// 	{
-// 		unsigned short res = buffer[head];
-// 		head = ++head % bufferSize;
-// 
-// 		return res;
-// 	}
-// 
-// 	return 0;
-// }
-
 Filter::Filter(const unsigned short num)
 	:num(num),
 	order(BL - 1),
@@ -73,10 +43,13 @@ void Filter::HandleEvent()
 	switch (event)
 	{
 	case EVENT_NEW_DATA_RECEIVED:
+		std::unique_lock<std::mutex> locker(g_dataLock);
+
 		short* filteredCounts = Filtering();
 		DataChunk* filteredData = new DataChunk(m_currentData->size, filteredCounts);
 
 		m_currentData = nullptr;
+		g_dataProcessed.notify_all();
 
 		if (output)
 		{

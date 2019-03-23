@@ -10,9 +10,6 @@
 #include <condition_variable>
 #include "WaveFormat.h"
 
-extern std::mutex g_eventLock;
-extern std::condition_variable g_eventReceived;
-
 void Log(const char* str);
 
 enum Events : short int
@@ -40,4 +37,7 @@ protected:
 	DataChunk* m_currentData;
 
 	Events event;
+
+	std::mutex g_eventLock;
+	std::condition_variable g_eventReceived;
 };

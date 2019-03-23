@@ -16,18 +16,18 @@ int main(int argc, char** argv)
 // 	FIR filter0(0);
 // 	FIR filter1(1);
 // 	FIR filter2(2);
-// 	FIR filter3(3);
+ 	FIR filter3(3);
 // 	FIR filter4(4);
 // 	FIR filter5(5);
 // 	FIR filter6(6);
 // 	FIR filter7(7);
 // 	FIR filter8(8);
 // 	FIR filter9(9);
-//	Summator sum(1);
+	Summator sum(1);
 // 	inputDevice.SetOutput(&filter0);
 // 	inputDevice.SetOutput(&filter1);
 // 	inputDevice.SetOutput(&filter2);
-// 	inputDevice.SetOutput(&filter3);
+ 	inputDevice.SetOutput(&filter3);
 // 	inputDevice.SetOutput(&filter4);
 // 	inputDevice.SetOutput(&filter5);
 // 	inputDevice.SetOutput(&filter6);
@@ -37,15 +37,14 @@ int main(int argc, char** argv)
 // 	filter0.SetOutput(&sum);
 // 	filter1.SetOutput(&sum);
 // 	filter2.SetOutput(&sum);
-// 	filter3.SetOutput(&sum);
+ 	filter3.SetOutput(&sum);
 // 	filter4.SetOutput(&sum);
 // 	filter5.SetOutput(&sum);
 // 	filter6.SetOutput(&sum);
 // 	filter7.SetOutput(&sum);
 // 	filter8.SetOutput(&sum);
 // 	filter9.SetOutput(&sum);
-//	sum.SetOutput(&outputDevice);
-	inputDevice.SetOutput(&outputDevice);
+	sum.SetOutput(&outputDevice);
 	outputDevice.SetOutput(&inputDevice);
 
 	WAVEFORMATEX waveFormat;
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
 // 	filter0.Init(waveFormat.wBitsPerSample);
 // 	filter1.Init(waveFormat.wBitsPerSample);
 // 	filter2.Init(waveFormat.wBitsPerSample);
-// 	filter3.Init(waveFormat.wBitsPerSample);
+ 	filter3.Init(waveFormat.wBitsPerSample);
 // 	filter4.Init(waveFormat.wBitsPerSample);
 //	filter5.Init(waveFormat.wBitsPerSample);
 // 	filter6.Init(waveFormat.wBitsPerSample);
@@ -90,10 +89,10 @@ int main(int argc, char** argv)
 // 		filter2.Run();
 // 	});
 // 
-// 	std::thread ft3([&]()
-// 	{
-// 		filter3.Run();
-// 	});
+ 	std::thread ft3([&]()
+ 	{
+ 		filter3.Run();
+ 	});
 // 
 // 	std::thread ft4([&]()
 // 	{
@@ -125,10 +124,10 @@ int main(int argc, char** argv)
 // 		filter9.Run();
 // 	});
 // 
-// 	std::thread st([&]()
-// 	{
-// 		sum.Run();
-// 	});
+ 	std::thread st([&]()
+ 	{
+ 		sum.Run();
+ 	});
 
 	std::thread ort([&]()
 	{
@@ -155,7 +154,7 @@ int main(int argc, char** argv)
 // 	ft0.join();
 // 	ft1.join();
 // 	ft2.join();
-// 	ft3.join();
+ 	ft3.join();
 // 	ft4.join();
 // 	ft5.join();
 // 	ft6.join();

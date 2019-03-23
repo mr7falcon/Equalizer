@@ -8,7 +8,10 @@ Summator::Summator(const unsigned short numOfBands)
 
 Summator::~Summator()
 {
-	delete[](m_summ);
+	if (m_summ)
+	{
+		delete[](m_summ);
+	}
 }
 
 void Summator::HandleEvent()
@@ -21,6 +24,8 @@ void Summator::HandleEvent()
 			Reallocate();
 		}
 
+		std::unique_lock<std::mutex> locker(g_dataLock);
+
 		for (unsigned long i = 0; i < m_currentData->size; ++i)
 		{
 			m_summ->data[i] += m_currentData->data[i];
@@ -28,7 +33,7 @@ void Summator::HandleEvent()
 
 		delete(m_currentData);
 		m_currentData = nullptr;
-		g_dataProcessed.notify_one();
+		g_dataProcessed.notify_all();
 
 		m_numOfChunks = ++m_numOfChunks % numOfBands;
 
