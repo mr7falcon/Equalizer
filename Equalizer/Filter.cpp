@@ -21,11 +21,6 @@ Filter::~Filter()
 
 unsigned short Filter::numProcessed;
 
-void Filter::Init(unsigned short bitsPerSample)
-{
-	this->bitsPerSample = bitsPerSample;
-}
-
 //short int* Filter::Transform(const unsigned long size, short int* counts, bool backward) const
 //{
 //	short int* transformedCounts = nullptr;

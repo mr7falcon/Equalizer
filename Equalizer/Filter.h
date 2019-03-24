@@ -10,8 +10,6 @@
  	Filter(const unsigned short num, const unsigned short numOfBands);
 	~Filter();
  
- 	void Init(unsigned short bitsPerSample);
-
 	void SetGain(float mult);
 	float GetGain() const;
  
@@ -20,7 +18,6 @@
 	const unsigned short numOfBands;
 	static unsigned short numProcessed;
 	unsigned short order;
- 	unsigned short bitsPerSample;
  
  	//short int* Transform(const unsigned long size, short int* counts, bool backward = false) const;
  	virtual const short* Filtering() = 0;

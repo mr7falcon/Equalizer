@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Equalizer.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="InputDevice.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
@@ -40,6 +37,12 @@
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="Summator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Equalizer.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,6 +72,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Summator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Equalizer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

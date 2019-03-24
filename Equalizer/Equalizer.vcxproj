@@ -155,6 +155,7 @@
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="DataHandler.cpp" />
     <ClCompile Include="Equalizer.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Filter.cpp" />
     <ClCompile Include="FIR.cpp" />
     <ClCompile Include="IIR.cpp" />
@@ -165,6 +166,7 @@
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="DataHandler.h" />
+    <ClInclude Include="Equalizer.h" />
     <ClInclude Include="Filter.h" />
     <ClInclude Include="FIR.h" />
     <ClInclude Include="IIR.h" />
