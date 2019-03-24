@@ -1,9 +1,10 @@
 #include "Filter.h"
 
-Filter::Filter(const unsigned short num)
+Filter::Filter(const unsigned short num, const unsigned short numOfBands)
 	:num(num),
 	order(BL - 1),
-	m_gain(1)
+	m_gain(1),
+	numOfBands(numOfBands)
 {
 	m_prevLastCounts = new short[order + 1];
 
@@ -17,6 +18,8 @@ Filter::~Filter()
 {
 	delete[](m_prevLastCounts);
 }
+
+unsigned short Filter::numProcessed;
 
 void Filter::Init(unsigned short bitsPerSample)
 {
@@ -45,15 +48,22 @@ void Filter::HandleEvent()
 	case EVENT_NEW_DATA_RECEIVED:
 		std::unique_lock<std::mutex> locker(g_dataLock);
 
-		short* filteredCounts = Filtering();
-		DataChunk* filteredData = new DataChunk(m_currentData->size, filteredCounts);
+		const short* filteredCounts = Filtering();
+
+		//ƒа, костыль, но по другому пока не придумал
+		++numProcessed;
+		if (numProcessed == numOfBands)
+		{
+			delete[](m_currentData);
+			numProcessed = 0;
+		}
 
 		m_currentData = nullptr;
 		g_dataProcessed.notify_one();
 
 		if (output)
 		{
-			dynamic_cast<DataHandler*>(output)->SendNewData(filteredData);
+			dynamic_cast<DataHandler*>(output)->SendNewData(filteredCounts);
 		}
 
 		break;

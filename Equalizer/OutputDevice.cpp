@@ -2,9 +2,8 @@
 
 OutputDevice::OutputDevice()
 	:m_pDS(NULL),
-	m_bufferSize(defaultChunkSize * 2 * sectionCount),
+	m_bufferSize(defaultChunkSize * sizeof(short) * sectionCount),
 	m_buffer(nullptr),
-	m_playingAllowed(false),
 	bufferEvents(nullptr),
 	m_currentSection(0)
 {
@@ -94,7 +93,7 @@ HRESULT OutputDevice::FillBuffer(const unsigned long startPos, const byte* data)
 		unsigned long dwLength;
 		unsigned long dwLength2;
 
-		const unsigned long size = defaultChunkSize * 2;
+		const unsigned long size = defaultChunkSize * sizeof(short);
 
 		if (FAILED(hr = m_buffer->Lock(startPos, size, &pbData, &dwLength,
 			&pbData2, &dwLength2, 0L)))
@@ -147,29 +146,29 @@ HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
 
 void OutputDevice::StartPlaying()
 {
+	std::unique_lock<std::mutex> locker(m_playingLock);
+	m_playingAllowed.wait(locker);
+
 	while (true)
 	{
-		if (m_playingAllowed)
+		if (!IsPlaying())
 		{
-			if (!IsPlaying())
+			if (FAILED(Play()))
 			{
-				if (FAILED(Play()))
-				{
-					Log("buffer playing error");
-					return;
-				}
+				Log("buffer playing error");
+				return;
 			}
-			else
-			{
-				unsigned long retVal, eventNum;
+		}
+		else
+		{
+			unsigned long retVal, eventNum;
 
-				retVal = WaitForMultipleObjects(sectionCount, bufferEvents, FALSE, INFINITE);
-				if (retVal != WAIT_FAILED)
-				{
-					eventNum = retVal - WAIT_OBJECT_0;
-					OnEvent(EVENT_SECTION_PLAYED);
-					ResetEvent(bufferEvents[eventNum]);
-				}
+			retVal = WaitForMultipleObjects(sectionCount, bufferEvents, FALSE, INFINITE);
+			if (retVal != WAIT_FAILED)
+			{
+				eventNum = retVal - WAIT_OBJECT_0;
+				OnEvent(EVENT_SECTION_PLAYED);
+				ResetEvent(bufferEvents[eventNum]);
 			}
 		}
 	}
@@ -194,20 +193,31 @@ void OutputDevice::HandleNewDataReceived()
 
 	const byte* encodedData = EncodeChunk(m_currentData);
 
-	delete(m_currentData);
+	delete[](m_currentData);
 	m_currentData = nullptr;
 
 	g_dataProcessed.notify_one();
 
 	m_swapBuffer.WriteSwapSection(encodedData);
 
-	if (!m_playingAllowed)
+	if (!IsPlaying())
 	{
-		HandleSectionPlayed();
-
-		if (m_currentSection == 0 && m_swapBuffer.GetWritePos() == 0)
+		if (m_swapBuffer.IsFull())
 		{
-			m_playingAllowed = true;
+			HandleSectionPlayed();
+
+			if (m_currentSection == 0)
+			{
+				std::unique_lock<std::mutex> playingLocker(m_playingLock);
+				m_playingAllowed.notify_one();
+			}
+		}
+		else
+		{
+			if (output)
+			{
+				output->OnEvent(EVENT_NEW_DATA_REQUESTED);
+			}
 		}
 	}
 }
@@ -216,17 +226,14 @@ void OutputDevice::HandleSectionPlayed()
 {
 	const byte* swapData = m_swapBuffer.ReadSwapSection();
 
-	if (!swapData)
+	if (swapData)
 	{
-		m_playingAllowed = false;
-		return;
-	}
+		FillBufferSection(swapData);
 
-	FillBufferSection(swapData);
-
-	if (output)
-	{
-		output->OnEvent(EVENT_NEW_DATA_REQUESTED);
+		if (output)
+		{
+			output->OnEvent(EVENT_NEW_DATA_REQUESTED);
+		}
 	}
 }
 
@@ -241,15 +248,15 @@ void OutputDevice::InitBufferEvents()
 	}
 }
 
-byte* OutputDevice::EncodeChunk(const DataChunk* newChunk)
+const byte* OutputDevice::EncodeChunk(const short* newChunk)
 {
-	byte* data = new byte[newChunk->size * 2];
+	byte* data = new byte[defaultChunkSize * sizeof(short)];
 
 	int j = 0;
-	for (unsigned long i = 0; i < newChunk->size; ++i)
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
 	{
-		data[j] = (byte)(newChunk->data[i]);
-		data[++j] = (byte)(newChunk->data[i] >> 8);
+		data[j] = (byte)(newChunk[i]);
+		data[++j] = (byte)(newChunk[i] >> 8);
 		++j;
 	}
 
@@ -277,6 +284,11 @@ SwapBuffer::SwapBuffer()
 	wtpos(0)
 {
 	swapData = new const byte*[sectionCount];
+
+	for (unsigned short i = 0; i < sectionCount; ++i)
+	{
+		swapData[i] = nullptr;
+	}
 }
 
 SwapBuffer::~SwapBuffer()
@@ -287,6 +299,7 @@ SwapBuffer::~SwapBuffer()
 const byte* SwapBuffer::ReadSwapSection()
 {
 	const byte* data = swapData[rdpos];
+	swapData[rdpos] = nullptr;
 	rdpos = ++rdpos % sectionCount;
 
 	return data;
@@ -294,6 +307,22 @@ const byte* SwapBuffer::ReadSwapSection()
 
 void SwapBuffer::WriteSwapSection(const byte* data)
 {
-	swapData[wtpos] = data;
-	wtpos = ++wtpos % sectionCount;
+	if (!swapData[wtpos])
+	{
+		swapData[wtpos] = data;
+		wtpos = ++wtpos % sectionCount;
+	}
+}
+
+bool SwapBuffer::IsFull() const
+{
+	for (unsigned short i = 0; i < sectionCount; ++i)
+	{
+		if (!swapData[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

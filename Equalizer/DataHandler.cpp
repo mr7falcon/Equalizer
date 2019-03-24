@@ -9,7 +9,7 @@ DataHandler::~DataHandler()
 {
 }
 
-void DataHandler::SendNewData(DataChunk* newCurrentData)
+void DataHandler::SendNewData(const short* newCurrentData)
 {
 	std::unique_lock<std::mutex> locker(g_dataLock);
 	while (IsProcessingData())

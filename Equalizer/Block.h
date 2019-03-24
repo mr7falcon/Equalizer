@@ -34,7 +34,7 @@ public:
 protected:
 	virtual void HandleEvent() = 0;
 
-	DataChunk* m_currentData;
+	const short* m_currentData;
 
 	Events event;
 

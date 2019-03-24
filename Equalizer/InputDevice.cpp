@@ -37,9 +37,9 @@ bool InputDevice::OpenFile(const char* fileName, WAVEFORMATEX& waveFormat)
 	return true;
 }
 
-DataChunk* InputDevice::FillChunk()
+const short* InputDevice::FillChunk()
 {
-	const unsigned long dataSize = defaultChunkSize * 2;
+	const unsigned long dataSize = defaultChunkSize * sizeof(short);
 	byte* data = new byte[dataSize];
 
 	if (m_file.tellg() >= m_header.chunkSize)
@@ -50,7 +50,7 @@ DataChunk* InputDevice::FillChunk()
 	
 	m_file.read((char*)data, dataSize);
 
-	DataChunk* newChunk = DecodeChunk(data);
+	const short* newChunk = DecodeChunk(data);
 
 	return newChunk;
 }
@@ -83,14 +83,14 @@ void InputDevice::HandleNewDataRequested()
 	}
 }
 
-DataChunk* InputDevice::DecodeChunk(const byte* inputData)
+const short* InputDevice::DecodeChunk(const byte* inputData)
 {
-	DataChunk* newData = new DataChunk(defaultChunkSize);
+	short* newData = new short[defaultChunkSize];
 
 	unsigned long j = 0;
-	for (unsigned long i = 0; i < newData->size; ++i)
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
 	{
-		newData->data[i] = ((short int)inputData[j + 1] << 8) | inputData[j];
+		newData[i] = ((short int)inputData[j + 1] << 8) | inputData[j];
 		j += 2;
 	}
 

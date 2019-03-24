@@ -22,6 +22,8 @@ public:
 	const unsigned short GetReadPos() const { return rdpos; }
 	const unsigned short GetWritePos() const { return wtpos; }
 
+	bool IsFull() const;
+
 private:
 	const byte** swapData;
 	unsigned short rdpos;
@@ -38,7 +40,6 @@ public:
 	bool IsPlaying();
 	
 	void StartPlaying();
-	void SetPlayingAllowed(bool allowed) { m_playingAllowed = allowed; }
 
 private:
 	HRESULT InitDevice(HWND hDlg);
@@ -53,7 +54,7 @@ private:
 	void HandleNewDataReceived();
 	void HandleSectionPlayed();
 
-	byte* EncodeChunk(const DataChunk* newChunk = nullptr);
+	const byte* EncodeChunk(const short* newChunk = nullptr);
 
 	LPDIRECTSOUND m_pDS;
 
@@ -62,7 +63,8 @@ private:
 	SwapBuffer m_swapBuffer;
 	unsigned short m_currentSection;
 
-	bool m_playingAllowed;
+	std::mutex m_playingLock;
+	std::condition_variable m_playingAllowed;
 
 	HANDLE* bufferEvents;
 

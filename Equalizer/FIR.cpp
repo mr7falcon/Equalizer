@@ -1,42 +1,44 @@
  #include "FIR.h"
  
-FIR::FIR(const unsigned short num)
-	:Filter(num)
+FIR::FIR(const unsigned short num, const unsigned short numOfBands)
+	:Filter(num, numOfBands)
 {
 }
 
-short* FIR::Filtering()
+const short* FIR::Filtering()
 {
-	short int* filtredCounts = nullptr;
+	short* filtredCounts = nullptr;
 
 	if (m_currentData)
 	{
-		filtredCounts = new short int[m_currentData->size];
+		filtredCounts = new short[defaultChunkSize];
 
-		for (unsigned long i = 0; i < m_currentData->size; ++i)
+		for (unsigned long i = 0; i < defaultChunkSize; ++i)
 		{
 			filtredCounts[i] = 0;
 		}
 
-		for (long i = 0; i < m_currentData->size; ++i)
+		const float mult = m_gain == 1.f ? 0.145f : 0.13 * m_gain;
+
+		for (long i = 0; i < defaultChunkSize; ++i)
 		{
 			for (short j = 0; j <= order; ++j)
 			{
 				if (i - j >= 0)
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_currentData->data[i - j] * m_gain);
+					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j] * mult);
 				}
 				else
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)] * m_gain);
+					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)] * mult);
 				}
 			}
 		}
 
-		const unsigned long lastCountsStart = m_currentData->size - order - 1;
+		const unsigned long lastCountsStart = defaultChunkSize - order - 1;
 		for (unsigned long i = 0; i <= order; ++i)
 		{
-			m_prevLastCounts[i] = m_currentData->data[lastCountsStart + i];
+			m_prevLastCounts[i] = m_currentData[lastCountsStart + i];
 		}
 	}
 

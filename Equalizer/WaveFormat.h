@@ -49,32 +49,4 @@ struct WaveFormat
 
 typedef unsigned char byte;
 
-struct DataChunk
-{
-	DataChunk()
-		:size(0),
-		data(nullptr)
-	{}
-
-	DataChunk(unsigned long size)
-		:size(size)
-	{
-		data = new short[size];
-	}
-
-	DataChunk(unsigned long size, short* data)
-		:size(size),
-		data(data)
-	{
-	}
-
-	~DataChunk()
-	{
-		delete[](data);
-	}
-
-	unsigned long size;
-	short* data;
-};
-
 const unsigned long defaultChunkSize = 16384;

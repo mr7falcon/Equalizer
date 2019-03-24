@@ -15,6 +15,6 @@ private:
 
 	const unsigned short numOfBands;
 
-	DataChunk* m_summ;
+	short* m_summ;
 	unsigned short m_numOfChunks;
 };

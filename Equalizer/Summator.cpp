@@ -26,12 +26,12 @@ void Summator::HandleEvent()
 
 		std::unique_lock<std::mutex> locker(g_dataLock);
 
-		for (unsigned long i = 0; i < m_currentData->size; ++i)
+		for (unsigned long i = 0; i < defaultChunkSize; ++i)
 		{
-			m_summ->data[i] += m_currentData->data[i];
+			m_summ[i] += m_currentData[i];
 		}
 
-		delete(m_currentData);
+		delete[](m_currentData);
 		m_currentData = nullptr;
 		g_dataProcessed.notify_one();
 
@@ -51,10 +51,10 @@ void Summator::HandleEvent()
 
 void Summator::Reallocate()
 {
-	m_summ = new DataChunk(defaultChunkSize);
+	m_summ = new short[defaultChunkSize];
 
-	for (unsigned long i = 0; i < m_summ->size; ++i)
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
 	{
-		m_summ->data[i] = 0;
+		m_summ[i] = 0;
 	}
 }

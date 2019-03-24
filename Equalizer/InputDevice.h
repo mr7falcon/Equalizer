@@ -18,12 +18,12 @@ public:
 	void SetOutput(Block* output) { outputs.push_back(output); };
 
 private:
-	DataChunk* FillChunk();
+	const short* FillChunk();
 
 	void HandleEvent();
 	void HandleNewDataRequested();
 
-	DataChunk* DecodeChunk(const byte* inputData = nullptr);
+	const short* DecodeChunk(const byte* inputData = nullptr);
 
 	std::ifstream m_file;
 

@@ -18,7 +18,7 @@ Block::~Block()
 {
 	if (m_currentData)
 	{
-		delete(m_currentData);
+		delete[](m_currentData);
 	}
 }
 

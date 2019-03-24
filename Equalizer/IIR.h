@@ -5,7 +5,7 @@
 class IIR : public Filter
 {
 public:
-	IIR(const unsigned short num);
+	IIR(const unsigned short num, const unsigned short numOfBands);
 	~IIR() {}
 private:
 

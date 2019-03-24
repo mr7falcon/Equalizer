@@ -5,8 +5,8 @@
  class FIR : public Filter
  {
  public:
-	FIR(const unsigned short num);
+	FIR(const unsigned short num, const unsigned short numOfBands);
 
  private:
- 	short* Filtering();
+ 	const short* Filtering();
  };

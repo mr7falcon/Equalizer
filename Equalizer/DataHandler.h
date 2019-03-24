@@ -8,7 +8,7 @@ public:
 	DataHandler();
 	~DataHandler();
 
-	void SendNewData(DataChunk* newCurrentData);
+	void SendNewData(const short* newCurrentData);
 	bool IsProcessingData() { return m_currentData != nullptr; }
 
 	void SetOutput(Block* output) { this->output = output; }

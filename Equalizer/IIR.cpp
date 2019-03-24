@@ -1,6 +1,6 @@
  #include "IIR.h"
  
- IIR::IIR(const unsigned short num)
-	 :Filter(num)
+ IIR::IIR(const unsigned short num, const unsigned short numOfBands)
+	 :Filter(num, numOfBands)
  {
  }

@@ -13,16 +13,16 @@ int main(int argc, char** argv)
 
 	InputDevice inputDevice;
 	OutputDevice outputDevice;
-	FIR filter0(0);
-	FIR filter1(1);
-	FIR filter2(2);
-	FIR filter3(3);
-	FIR filter4(4);
-	FIR filter5(5);
-	FIR filter6(6);
-	FIR filter7(7);
-	FIR filter8(8);
-	FIR filter9(9);
+	FIR filter0(0, 10);
+	FIR filter1(1, 10);
+	FIR filter2(2, 10);
+	FIR filter3(3, 10);
+	FIR filter4(4, 10);
+	FIR filter5(5, 10);
+	FIR filter6(6, 10);
+	FIR filter7(7, 10);
+	FIR filter8(8, 10);
+	FIR filter9(9, 10);
 	Summator sum(10);
 	inputDevice.SetOutput(&filter0);
 	inputDevice.SetOutput(&filter1);
