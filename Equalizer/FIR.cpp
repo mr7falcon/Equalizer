@@ -18,7 +18,7 @@ const short* FIR::Filtering()
 			filtredCounts[i] = 0;
 		}
 
-		const float mult = m_gain == 1.f ? 0.145f : 0.13 * m_gain;
+		const float mult = m_gain == 1.f ? 0.145f : 0.13f * m_gain;
 
 		for (long i = 0; i < defaultChunkSize; ++i)
 		{

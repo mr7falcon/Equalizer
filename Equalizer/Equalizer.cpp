@@ -146,7 +146,26 @@ int main(int argc, char** argv)
 		std::string command;
 		if (std::cin >> command)
 		{
-
+			if (command == "up")
+			{
+				filter4.SetGain(-50);
+				filter5.SetGain(-50);
+				filter6.SetGain(-50);
+				filter7.SetGain(-50);
+				filter8.SetGain(-50);
+				filter9.SetGain(-50);
+				continue;
+			}
+			if (command == "rst")
+			{
+				filter4.SetGain(1);
+				filter5.SetGain(1);
+				filter6.SetGain(1);
+				filter7.SetGain(1);
+				filter8.SetGain(1);
+				filter9.SetGain(1);
+				continue;
+			}
 		}
 	}
 
