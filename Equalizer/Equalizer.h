@@ -22,6 +22,7 @@ public:
 
 	void Run(const char* fileName);
 	void StartPlaying();
+	void ShutDown();
 
 	void ResetGainBands(const std::vector<int>& bandNums, Gains type);
 

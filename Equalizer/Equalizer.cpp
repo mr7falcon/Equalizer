@@ -83,7 +83,7 @@ void Equalizer::StartPlaying()
  		outputDevice->StartPlaying();
  	});
 
-	threads.push_back(opt);
+	opt->detach();
 }
 
 void Equalizer::ResetGainBands(const std::vector<int>& bandNums, Gains type)
@@ -108,4 +108,15 @@ void Equalizer::ResetGainBands(const std::vector<int>& bandNums, Gains type)
 	{
 		filters[bandNums[i]]->SetGain(mult);
 	}
+}
+
+void Equalizer::ShutDown()
+{
+	inputDevice->OnEvent(EVENT_SHUTDOWN);
+	for (unsigned short i = 0; i < numOfBands; ++i)
+	{
+		filters[i]->OnEvent(EVENT_SHUTDOWN);
+	}
+	summator->OnEvent(EVENT_SHUTDOWN);
+	outputDevice->OnEvent(EVENT_SHUTDOWN);
 }

@@ -16,6 +16,7 @@ enum Events : short int
 	EVENT_NEW_DATA_RECEIVED,
 	EVENT_NEW_DATA_REQUESTED,
 	EVENT_SECTION_PLAYED,
+	EVENT_SHUTDOWN,
 	
 	EVENT_NO_EVENTS = -1
 };
@@ -37,6 +38,6 @@ protected:
 
 	Events event;
 
-	std::mutex g_eventLock;
-	std::condition_variable g_eventReceived;
+	std::mutex m_eventLock;
+	std::condition_variable m_eventReceived;
 };

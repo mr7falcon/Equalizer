@@ -8,10 +8,6 @@ Summator::Summator(const unsigned short numOfBands)
 
 Summator::~Summator()
 {
-	if (m_summ)
-	{
-		delete[](m_summ);
-	}
 }
 
 void Summator::HandleEvent()

@@ -16,32 +16,36 @@ Block::Block()
 
 Block::~Block()
 {
-	if (m_currentData)
-	{
-		delete[](m_currentData);
-	}
 }
 
 void Block::Run()
 {
 	while (true)
 	{
- 		std::unique_lock<std::mutex> locker(g_eventLock);
+ 		std::unique_lock<std::mutex> locker(m_eventLock);
 		while (event == EVENT_NO_EVENTS)
 		{
- 			g_eventReceived.wait(locker);
+ 			m_eventReceived.wait(locker);
 		}
 
-		HandleEvent();
+		if (event == EVENT_SHUTDOWN)
+		{
+			return;
+		}
+		else
+		{
+			HandleEvent();
+		}
+
 		event = EVENT_NO_EVENTS;
 	}
 }
 
 void Block::OnEvent(Events event)
 {
-	std::unique_lock<std::mutex> locker(g_eventLock);
+	std::unique_lock<std::mutex> locker(m_eventLock);
 
 	this->event = event;
 
-	g_eventReceived.notify_one();
+	m_eventReceived.notify_one();
 }

@@ -54,6 +54,12 @@ int main(int argc, char** argv)
 				equalizer.ResetGainBands(ExtractBandNums(), Gains::RESET);
 				continue;
 			}
+
+			if (command == "shutdown")
+			{
+				equalizer.ShutDown();
+				return;
+			}
 		}
 	});
 	commandThread.detach();

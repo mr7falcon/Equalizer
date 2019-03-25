@@ -13,6 +13,7 @@ OutputDevice::OutputDevice()
 
 OutputDevice::~OutputDevice()
 {
+	FreeDirectSound();
 	delete[](bufferEvents);
 }
 
@@ -147,9 +148,9 @@ HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
 
 void OutputDevice::StartPlaying()
 {
-	std::unique_lock<std::mutex> locker(m_playingLock);
 	while (!m_playingAllowed)
 	{
+		std::unique_lock<std::mutex> locker(m_playingLock);
 		m_allowPlaying.wait(locker);
 	}
 
