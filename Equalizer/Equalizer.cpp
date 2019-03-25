@@ -5,7 +5,6 @@ Equalizer::Equalizer()
 {
 	inputDevice = new InputDevice();
 	blocks.push_back(inputDevice);
-	inputDevice->SetOutput(outputDevice);
 
 	outputDevice = new OutputDevice();
 	blocks.push_back(outputDevice);
@@ -30,6 +29,11 @@ Equalizer::~Equalizer()
 	for (unsigned short i = 0; i < blocks.size(); ++i)
 	{
 		delete(blocks[i]);
+	}
+
+	for (unsigned short i = 0; i < threads.size(); ++i)
+	{
+		delete(threads[i]);
 	}
 }
 
@@ -64,6 +68,7 @@ void Equalizer::Run(const char* fileName)
 	}
 
 	inputDevice->OnEvent(EVENT_NEW_DATA_REQUESTED);
+	StartPlaying();
 
 	for (unsigned short i = 0; i < threads.size(); ++i)
 	{
@@ -73,12 +78,12 @@ void Equalizer::Run(const char* fileName)
 
 void Equalizer::StartPlaying()
 {
-	std::thread opt([&]()
+	std::thread* opt = new std::thread([&]()
  	{
  		outputDevice->StartPlaying();
  	});
 
-	opt.detach();
+	threads.push_back(opt);
 }
 
 void Equalizer::ResetGainBands(const std::vector<int>& bandNums, Gains type)
@@ -87,13 +92,13 @@ void Equalizer::ResetGainBands(const std::vector<int>& bandNums, Gains type)
 	switch (type)
 	{
 	case UP:
-		mult = 2.f;
+		mult = 5;
 		break;
 	case DOWN:
-		mult = -50.f;
+		mult = -50;
 		break;
 	case RESET:
-		mult = 1.f;
+		mult = 0;
 		break;
 	default:
 		return;

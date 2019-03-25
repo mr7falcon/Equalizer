@@ -18,19 +18,17 @@ const short* FIR::Filtering()
 			filtredCounts[i] = 0;
 		}
 
-		const float mult = m_gain == 1.f ? 0.145f : 0.13f * m_gain;
-
 		for (long i = 0; i < defaultChunkSize; ++i)
 		{
 			for (short j = 0; j <= order; ++j)
 			{
 				if (i - j >= 0)
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j] * mult);
+					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j] * m_gain);
 				}
 				else
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)] * mult);
+					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)] * m_gain);
 				}
 			}
 		}

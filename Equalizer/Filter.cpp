@@ -3,7 +3,7 @@
 Filter::Filter(const unsigned short num, const unsigned short numOfBands)
 	:num(num),
 	order(BL - 1),
-	m_gain(1),
+	m_gain(0.145),
 	numOfBands(numOfBands)
 {
 	m_prevLastCounts = new short[order + 1];
@@ -65,12 +65,12 @@ void Filter::HandleEvent()
 	}
 }
 
-void Filter::SetGain(float mult)
+void Filter::SetGain(double mult)
 {
-	m_gain = mult < 0.f ? 1 / mult : mult;
+	m_gain = 0.145 * std::pow(10, mult / 20);
 }
 
-float Filter::GetGain() const
+double Filter::GetGain() const
 {
 	return m_gain;
 }

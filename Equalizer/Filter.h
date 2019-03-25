@@ -10,8 +10,8 @@
  	Filter(const unsigned short num, const unsigned short numOfBands);
 	~Filter();
  
-	void SetGain(float mult);
-	float GetGain() const;
+	void SetGain(double mult);
+	double GetGain() const;
  
  protected:
 	const unsigned short num;
@@ -26,5 +26,5 @@
 
 	short* m_prevLastCounts;
 
-	float m_gain;
+	double m_gain;
  };

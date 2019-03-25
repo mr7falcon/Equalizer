@@ -37,12 +37,6 @@ int main(int argc, char** argv)
 		std::string command;
 		while (std::cin >> command)
 		{
-			if (command == "play")
-			{
-				equalizer.StartPlaying();
-				continue;
-			}
-
 			if (command == "up")
 			{
 				equalizer.ResetGainBands(ExtractBandNums(), Gains::UP);

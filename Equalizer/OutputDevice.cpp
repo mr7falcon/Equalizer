@@ -5,7 +5,8 @@ OutputDevice::OutputDevice()
 	m_bufferSize(defaultChunkSize * sizeof(short) * sectionCount),
 	m_buffer(nullptr),
 	bufferEvents(nullptr),
-	m_currentSection(0)
+	m_currentSection(0),
+	m_playingAllowed(false)
 {
 	InitBufferEvents();
 }
@@ -147,7 +148,10 @@ HRESULT OutputDevice::Init(HWND hDlg, WAVEFORMATEX& waveFormat)
 void OutputDevice::StartPlaying()
 {
 	std::unique_lock<std::mutex> locker(m_playingLock);
-	m_playingAllowed.wait(locker);
+	while (!m_playingAllowed)
+	{
+		m_allowPlaying.wait(locker);
+	}
 
 	while (true)
 	{
@@ -200,7 +204,7 @@ void OutputDevice::HandleNewDataReceived()
 
 	m_swapBuffer.WriteSwapSection(encodedData);
 
-	if (!IsPlaying())
+	if (!IsPlaying() && !m_playingAllowed)
 	{
 		if (m_swapBuffer.IsFull())
 		{
@@ -209,7 +213,8 @@ void OutputDevice::HandleNewDataReceived()
 			if (m_currentSection == 0)
 			{
 				std::unique_lock<std::mutex> playingLocker(m_playingLock);
-				m_playingAllowed.notify_one();
+				m_allowPlaying.notify_one();
+				m_playingAllowed = true;
 			}
 		}
 		else
@@ -229,11 +234,11 @@ void OutputDevice::HandleSectionPlayed()
 	if (swapData)
 	{
 		FillBufferSection(swapData);
+	}
 
-		if (output)
-		{
-			output->OnEvent(EVENT_NEW_DATA_REQUESTED);
-		}
+	if (output)
+	{
+		output->OnEvent(EVENT_NEW_DATA_REQUESTED);
 	}
 }
 

@@ -64,7 +64,8 @@ private:
 	unsigned short m_currentSection;
 
 	std::mutex m_playingLock;
-	std::condition_variable m_playingAllowed;
+	std::condition_variable m_allowPlaying;
+	bool m_playingAllowed;
 
 	HANDLE* bufferEvents;
 
