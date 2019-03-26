@@ -4,10 +4,6 @@
 #include "DataHandler.h"
 #include "InputDevice.h"
 
-#define SAFE_DELETE(p)  { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p) { if(p) { (p)->Release(); (p)=NULL; } } 
-
-
 const unsigned short sectionCount = 4;
 
 class SwapBuffer

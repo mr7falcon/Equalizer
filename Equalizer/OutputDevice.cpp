@@ -36,8 +36,10 @@ HRESULT OutputDevice::InitDevice(HWND hDlg)
 
 HRESULT OutputDevice::FreeDirectSound()
 {
-	SAFE_RELEASE(m_buffer);
-	SAFE_RELEASE(m_pDS);
+	m_buffer->Release();
+	m_buffer = nullptr;
+	m_pDS->Release();
+	m_pDS = nullptr;
 
 	CoUninitialize();
 
@@ -299,6 +301,14 @@ SwapBuffer::SwapBuffer()
 
 SwapBuffer::~SwapBuffer()
 {
+	for (unsigned short i = 0; i < sectionCount; ++i)
+	{
+		if (swapData[i])
+		{
+			delete[](swapData[i]);
+		}
+	}
+
 	delete[](swapData);
 }
 
