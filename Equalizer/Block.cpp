@@ -1,11 +1,12 @@
 #include "Block.h"
 
+std::mutex g_logLock;
+
 void Log(const char* str)
 {
-	std::mutex m;
-	m.lock();
+	g_logLock.lock();
 	std::cout << str << std::endl;
-	m.unlock();
+	g_logLock.unlock();
 }
 
 Block::Block()
