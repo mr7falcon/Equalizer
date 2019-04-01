@@ -1,7 +1,7 @@
  #include "FIR.h"
  
 FIR::FIR(const unsigned short num, const unsigned short numOfBands)
-	:Filter(num, numOfBands)
+	:Filter(num, numOfBands, FCL - 1)
 {
 }
 
@@ -24,13 +24,15 @@ const short* FIR::Filtering()
 			{
 				if (i - j >= 0)
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j] * m_gain);
+					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j]);
 				}
 				else
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)] * m_gain);
+					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)]);
 				}
 			}
+
+			filtredCounts[i] *= m_gain;
 		}
 
 		const unsigned long lastCountsStart = defaultChunkSize - order - 1;

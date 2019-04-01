@@ -16,7 +16,7 @@ Equalizer::Equalizer()
 
 	for (unsigned short i = 0; i < numOfBands; ++i)
 	{
-		FIR* filter = new FIR(i, numOfBands);
+		IIR* filter = new IIR(i, numOfBands);
 		filters.push_back(filter);
 		blocks.push_back(filter);
 		inputDevice->SetOutput(filter);

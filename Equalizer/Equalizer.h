@@ -5,6 +5,7 @@
 #include "InputDevice.h"
 #include "OutputDevice.h"
 #include "FIR.h"
+#include "IIR.h"
 #include "Summator.h"
 
 enum Gains : unsigned short
@@ -31,7 +32,7 @@ private:
 	std::vector<std::thread*> threads;
 
 	const unsigned short numOfBands;
-	std::vector<FIR*> filters;
+	std::vector<Filter*> filters;
 	InputDevice* inputDevice;
 	OutputDevice* outputDevice;
 	Summator* summator;

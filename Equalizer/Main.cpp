@@ -2,7 +2,6 @@
 #include "Equalizer.h"
 
 #pragma comment(lib, "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.17763.0\\um\\x64\\dsound.lib")
-#pragma comment(lib, "C:\\Users\\mrfal\\source\\repos\\Equalizer\\Equalizer\\fftw\\libfftw3-3.lib")
 
 const std::vector<int> ExtractBandNums()
 {

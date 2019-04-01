@@ -1,8 +1,8 @@
 #include "Filter.h"
 
-Filter::Filter(const unsigned short num, const unsigned short numOfBands)
+Filter::Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order)
 	:num(num),
-	order(BL - 1),
+	order(order),
 	m_gain(0.145),
 	numOfBands(numOfBands)
 {
@@ -45,7 +45,7 @@ void Filter::HandleEvent()
 
 		const short* filteredCounts = Filtering();
 
-		//ƒа, костыль, но по другому пока не придумал
+		//ƒа, костыль, но по другому пока не придумал. — shared_ptr вообще кака€-то чушн€ происходит
 		++numProcessed;
 		if (numProcessed == numOfBands)
 		{
