@@ -1,10 +1,11 @@
 #include "Filter.h"
 
-Filter::Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order, const double mult)
+Filter::Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order, const double coef)
 	:num(num),
 	order(order),
 	m_gain(0),
-	m_mult(mult),
+	coef(coef),
+	m_mult(coef),
 	numOfBands(numOfBands)
 {
 	m_prevLastCounts = new short[order + 1];
@@ -54,6 +55,7 @@ void Filter::HandleEvent()
 void Filter::SetGain(const double mult)
 {
 	m_gain = mult;
+	m_mult = coef * std::pow(10, m_gain / 20);
 }
 
 double Filter::GetGain() const

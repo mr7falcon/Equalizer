@@ -60,10 +60,3 @@
 
 	 return filtredCounts;
  }
-
-
- void IIR::SetGain(const double mult)
- {
-	 m_gain = mult;
-	 m_mult = 0.05 * std::pow(10, m_gain / 20);
- }

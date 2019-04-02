@@ -44,9 +44,3 @@ const short* FIR::Filtering()
 
 	return filtredCounts;
 }
-
-void FIR::SetGain(const double mult)
-{
-	m_gain = mult;
-	m_mult = 0.145 * std::pow(10, m_gain / 20);
-}

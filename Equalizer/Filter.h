@@ -5,10 +5,10 @@
  class Filter : public DataHandler
  {
  public:
- 	Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order, const double mult);
+ 	Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order, const double coef);
 	~Filter();
  
-	virtual void SetGain(const double mult);
+	void SetGain(const double mult);
 	double GetGain() const;
  
  protected:
@@ -25,4 +25,5 @@
 
 	double m_gain;
 	double m_mult;
+	const double coef;
  };
