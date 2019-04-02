@@ -10,4 +10,6 @@ public:
 	~IIR() {}
 private:
 	const short* Filtering();
+
+	short* m_prevOutLastCounts;
 };

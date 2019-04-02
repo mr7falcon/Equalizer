@@ -49,4 +49,4 @@ struct WaveFormat
 
 typedef unsigned char byte;
 
-const unsigned long defaultChunkSize = 16384;
+const unsigned long defaultChunkSize = 32768;

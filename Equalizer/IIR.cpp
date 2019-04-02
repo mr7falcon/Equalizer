@@ -3,6 +3,12 @@
  IIR::IIR(const unsigned short num, const unsigned short numOfBands)
 	 :Filter(num, numOfBands, ICL - 1)
  {
+	 m_prevOutLastCounts = new short[order + 1];
+
+	 for (unsigned short i = 0; i <= order; ++i)
+	 {
+		 m_prevOutLastCounts[i] = 0;
+	 }
  }
 
  const short* IIR::Filtering()
@@ -20,31 +26,29 @@
 
 		 for (long i = 0; i < defaultChunkSize; ++i)
 		 {
-			 for (short j = 0; j <= order; ++j)
+			 const short n = i % (order + 1);
+
+			 for (short j = 0; j < DL[n]; ++j)
 			 {
-				 if (i - j >= 0)
-				 {
-					 for (int z = 0; z < NL[j]; ++z)
-					 {
-						 filtredCounts[i] += (short)(NUM[num][j][z] * m_currentData[i - j]);
-					 }
-				 }
-				 else
-				 {
-					 for (int z = 0; z < DL[j]; ++z)
-					 {
-						 filtredCounts[i] += (short)(DEN[num][j][z] * m_prevLastCounts[order + (i - j - 1)]);
-					 }
-				 }
+				 filtredCounts[i] -= (short)(DEN[num][n][j] * (i - j >= 0 ? filtredCounts[i - j] : m_prevOutLastCounts[order + (i - j - 1)]));
 			 }
 
-			 filtredCounts[i] *= m_gain;
+			 for (short j = 0; j < NL[n]; ++j)
+			 {
+				 filtredCounts[i] += (short)(NUM[num][n][j] * (i - j >= 0 ? m_currentData[i - j] : m_prevLastCounts[order + (i - j - 1)]));
+			 }
 		 }
 
 		 const unsigned long lastCountsStart = defaultChunkSize - order - 1;
 		 for (unsigned long i = 0; i <= order; ++i)
 		 {
 			 m_prevLastCounts[i] = m_currentData[lastCountsStart + i];
+			 m_prevOutLastCounts[i] = filtredCounts[lastCountsStart + i];
+		 }
+
+		 for (unsigned long i = 0; i < defaultChunkSize; ++i)
+		 {
+			 filtredCounts[i] *= m_gain;
 		 }
 	 }
 
