@@ -1,9 +1,10 @@
 #include "Filter.h"
 
-Filter::Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order)
+Filter::Filter(const unsigned short num, const unsigned short numOfBands, const unsigned short order, const double mult)
 	:num(num),
 	order(order),
-	m_gain(0.145),
+	m_gain(0),
+	m_mult(mult),
 	numOfBands(numOfBands)
 {
 	m_prevLastCounts = new short[order + 1];
@@ -20,21 +21,6 @@ Filter::~Filter()
 }
 
 unsigned short Filter::numProcessed;
-
-//short int* Filter::Transform(const unsigned long size, short int* counts, bool backward) const
-//{
-//	short int* transformedCounts = nullptr;
-//
-//	if (counts)
-//	{
-//		transformedCounts = new short int[size];
-//		fftw_plan plan = fftw_plan_dft_1d(size, (fftw_complex*)(&counts), (fftw_complex*)(&transformedCounts), backward ? FFTW_BACKWARD : FFTW_FORWARD, FFTW_ESTIMATE);
-//		fftw_execute(plan);
-//		fftw_destroy_plan(plan);
-//	}
-//
-//	return transformedCounts;
-//}
 
 void Filter::HandleEvent()
 {
@@ -65,9 +51,9 @@ void Filter::HandleEvent()
 	}
 }
 
-void Filter::SetGain(double mult)
+void Filter::SetGain(const double mult)
 {
-	m_gain = 0.145 * std::pow(10, mult / 20);
+	m_gain = mult;
 }
 
 double Filter::GetGain() const

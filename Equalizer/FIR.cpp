@@ -1,7 +1,7 @@
  #include "FIR.h"
  
 FIR::FIR(const unsigned short num, const unsigned short numOfBands)
-	:Filter(num, numOfBands, FCL - 1)
+	:Filter(num, numOfBands, FCL - 1, 0.145)
 {
 }
 
@@ -32,7 +32,7 @@ const short* FIR::Filtering()
 				}
 			}
 
-			filtredCounts[i] *= m_gain;
+			filtredCounts[i] *= m_mult;
 		}
 
 		const unsigned long lastCountsStart = defaultChunkSize - order - 1;
@@ -43,4 +43,10 @@ const short* FIR::Filtering()
 	}
 
 	return filtredCounts;
+}
+
+void FIR::SetGain(const double mult)
+{
+	m_gain = mult;
+	m_mult = 0.145 * std::pow(10, m_gain / 20);
 }

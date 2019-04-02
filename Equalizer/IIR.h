@@ -7,7 +7,10 @@ class IIR : public Filter
 {
 public:
 	IIR(const unsigned short num, const unsigned short numOfBands);
-	~IIR() {}
+	~IIR();
+
+	void SetGain(const double mult);
+
 private:
 	const short* Filtering();
 
