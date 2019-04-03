@@ -1,7 +1,7 @@
  #include "FIR.h"
  
 FIR::FIR(const unsigned short num, const unsigned short numOfBands)
-	:Filter(num, numOfBands, FCL - 1, 0.145)
+	:Filter(num, numOfBands, FCL - 1, 0.12)
 {
 }
 

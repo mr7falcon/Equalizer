@@ -29,7 +29,24 @@ const std::vector<int> ExtractBandNums()
 
 int main(int argc, char** argv)
 {
-	Equalizer equalizer;
+	if (argc < 3)
+	{
+		Log("Wrong args");
+		return 1;
+	}
+
+	Filters filterType = FILTER_WRONG;
+
+	if (!strcmp(argv[2], "f"))
+	{
+		filterType = FILTER_FIR;
+	}
+	else if (!strcmp(argv[2], "i"))
+	{
+		filterType = FILTER_IIR;
+	}
+
+	Equalizer equalizer(filterType);
 
 	std::thread commandThread([&]()
 	{

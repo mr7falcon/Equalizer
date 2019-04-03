@@ -1,6 +1,6 @@
 #include "Equalizer.h"
 
-Equalizer::Equalizer()
+Equalizer::Equalizer(const Filters filterType)
 	:numOfBands(10)
 {
 	inputDevice = new InputDevice();
@@ -16,11 +16,24 @@ Equalizer::Equalizer()
 
 	for (unsigned short i = 0; i < numOfBands; ++i)
 	{
-		FIR* filter = new FIR(i, numOfBands);
-		filters.push_back(filter);
-		blocks.push_back(filter);
-		inputDevice->SetOutput(filter);
-		filter->SetOutput(summator);
+		Filter* filter = nullptr;
+
+		switch (filterType)
+		{
+		case FILTER_FIR:
+			filter = new FIR(i, numOfBands);
+			break;
+		case FILTER_IIR:
+			filter = new IIR(i, numOfBands);
+		}
+		
+		if (filter)
+		{
+			filters.push_back(filter);
+			blocks.push_back(filter);
+			inputDevice->SetOutput(filter);
+			filter->SetOutput(summator);
+		}
 	}
 }
 

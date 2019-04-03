@@ -15,10 +15,18 @@ enum Gains : unsigned short
 	RESET
 };
 
+enum Filters : short
+{
+	FILTER_FIR,
+	FILTER_IIR,
+
+	FILTER_WRONG = -1
+};
+
 class Equalizer
 {
 public:
-	Equalizer();
+	Equalizer(const Filters filterType);
 	~Equalizer();
 
 	void Run(const char* fileName);
