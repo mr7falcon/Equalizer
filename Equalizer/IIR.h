@@ -11,6 +11,4 @@ public:
 
 private:
 	const short* Filtering();
-
-	short* m_prevOutLastCounts;
 };
