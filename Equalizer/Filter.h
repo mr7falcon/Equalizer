@@ -17,11 +17,9 @@
 	static unsigned short numProcessed;
 	unsigned short order;
  
- 	virtual const short* Filtering() = 0;
+ 	virtual const double* Filtering() = 0;
 
 	void HandleEvent();
-
-	short* m_prevLastCounts;
 
 	double m_gain;
 	double m_mult;

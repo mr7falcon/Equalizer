@@ -10,5 +10,5 @@ public:
 	~IIR();
 
 private:
-	const short* Filtering();
+	const double* Filtering();
 };

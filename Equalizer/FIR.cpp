@@ -3,40 +3,46 @@
 FIR::FIR(const unsigned short num, const unsigned short numOfBands)
 	:Filter(num, numOfBands, FCL - 1, 0.12)
 {
+	m_prevLastCounts = new short[order + 1];
+
+	for (unsigned short i = 0; i <= order; ++i)
+	{
+		m_prevLastCounts[i] = 0;
+	}
 }
 
-const short* FIR::Filtering()
+FIR::~FIR()
 {
-	short* filtredCounts = nullptr;
+	delete[](m_prevLastCounts);
+}
+
+const double* FIR::Filtering()
+{
+	double* filtredCounts = nullptr;
 
 	if (m_currentData)
 	{
-		filtredCounts = new short[defaultChunkSize];
-
-		for (unsigned long i = 0; i < defaultChunkSize; ++i)
-		{
-			filtredCounts[i] = 0;
-		}
+		filtredCounts = new double[defaultChunkSize];
 
 		for (long i = 0; i < defaultChunkSize; ++i)
 		{
+			filtredCounts[i] = 0;
+
 			for (short j = 0; j <= order; ++j)
 			{
 				if (i - j >= 0)
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_currentData[i - j]);
+					filtredCounts[i] += B[num][j] * m_currentData[i - j];
 				}
 				else
 				{
-					filtredCounts[i] += (short)(B[num][j] * m_prevLastCounts[order + (i - j - 1)]);
+					filtredCounts[i] += B[num][j] * m_prevLastCounts[order + (i - j - 1)];
 				}
 			}
-
-			filtredCounts[i] *= m_mult;
 		}
 
 		const unsigned long lastCountsStart = defaultChunkSize - order - 1;
-		for (unsigned long i = 0; i <= order; ++i)
+		for (unsigned short i = 0; i <= order; ++i)
 		{
 			m_prevLastCounts[i] = m_currentData[lastCountsStart + i];
 		}

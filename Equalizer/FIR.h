@@ -7,8 +7,10 @@
  {
  public:
 	FIR(const unsigned short num, const unsigned short numOfBands);
-	~FIR() {}
+	~FIR();
 
  private:
- 	const short* Filtering();
+ 	const double* Filtering();
+
+	short* m_prevLastCounts;
  };

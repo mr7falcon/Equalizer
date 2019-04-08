@@ -8,17 +8,10 @@ Filter::Filter(const unsigned short num, const unsigned short numOfBands, const 
 	m_mult(coef),
 	numOfBands(numOfBands)
 {
-	m_prevLastCounts = new short[order + 1];
-
-	for (unsigned short i = 0; i <= order; ++i)
-	{
-		m_prevLastCounts[i] = 0;
-	}
 }
 
 Filter::~Filter()
 {
-	delete[](m_prevLastCounts);
 }
 
 unsigned short Filter::numProcessed;
@@ -30,7 +23,16 @@ void Filter::HandleEvent()
 	case EVENT_NEW_DATA_RECEIVED:
 		std::unique_lock<std::mutex> locker(g_dataLock);
 
-		const short* filteredCounts = Filtering();
+		const double* filteredCounts = Filtering();
+
+		short* dataToSend = new short[defaultChunkSize];
+
+		for (unsigned long i = 0; i < defaultChunkSize; ++i)
+		{
+			dataToSend[i] = (short)(m_mult * filteredCounts[i]);
+		}
+
+		delete[](filteredCounts);
 
 		//ƒа, костыль, но по другому пока не придумал. — shared_ptr вообще кака€-то чушн€ происходит
 		++numProcessed;
@@ -45,7 +47,7 @@ void Filter::HandleEvent()
 
 		if (output)
 		{
-			dynamic_cast<DataHandler*>(output)->SendNewData(filteredCounts);
+			dynamic_cast<DataHandler*>(output)->SendNewData(dataToSend);
 		}
 
 		break;
