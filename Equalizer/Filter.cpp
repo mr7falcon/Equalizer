@@ -5,7 +5,7 @@ Filter::Filter(const unsigned short num, const unsigned short numOfBands, const 
 	order(order),
 	m_gain(0),
 	coef(coef),
-	m_mult(coef),
+	m_mult(1),
 	numOfBands(numOfBands)
 {
 }
@@ -29,7 +29,8 @@ void Filter::HandleEvent()
 
 		for (unsigned long i = 0; i < defaultChunkSize; ++i)
 		{
-			dataToSend[i] = (short)(m_mult * filteredCounts[i]);
+			dataToSend[i] = (short)(coef * filteredCounts[i]);
+			dataToSend[i] *= m_mult;
 		}
 
 		delete[](filteredCounts);
@@ -57,7 +58,7 @@ void Filter::HandleEvent()
 void Filter::SetGain(const double mult)
 {
 	m_gain = mult;
-	m_mult = coef * std::pow(10, m_gain / 20);
+	m_mult = std::pow(10, m_gain / 20);
 }
 
 double Filter::GetGain() const

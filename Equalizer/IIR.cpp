@@ -1,7 +1,7 @@
  #include "IIR.h"
  
  IIR::IIR(const unsigned short num, const unsigned short numOfBands)
-	 :Filter(num, numOfBands, ICL - 1, 0.01)
+	 :Filter(num, numOfBands, ICL - 1, 0.005)
  {
  }
 
