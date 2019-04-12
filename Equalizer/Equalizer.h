@@ -35,6 +35,8 @@ public:
 
 	void ResetGainBands(const std::vector<int>& bandNums, Gains type);
 
+	void SetEffect(Effects effect, bool reset = false) { summator->SetEffect(effect, reset); }
+
 private:
 	std::vector<Block*> blocks;
 	std::vector<std::thread*> threads;

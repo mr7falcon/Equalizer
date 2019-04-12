@@ -76,6 +76,18 @@ int main(int argc, char** argv)
 				equalizer.ShutDown();
 				return;
 			}
+
+			if (command == "delay")
+			{
+				equalizer.SetEffect(EFFECT_DELAY);
+				continue;
+			}
+
+			if (command == "clipping")
+			{
+				equalizer.SetEffect(EFFECT_CLIPPING);
+				continue;
+			}
 		}
 	});
 	commandThread.detach();
