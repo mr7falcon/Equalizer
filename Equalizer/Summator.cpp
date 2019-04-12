@@ -3,7 +3,7 @@
 Summator::Summator(const unsigned short numOfBands)
 	:numOfBands(numOfBands),
 	m_numOfChunks(0),
-	m_sampleDelay(8096)
+	m_sampleDelay(10000)
 {
 	m_prevLastCounts = new short[m_sampleDelay];
 
