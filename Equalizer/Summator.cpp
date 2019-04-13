@@ -98,7 +98,7 @@ void Summator::ApplyDelay()
 
 	for (long i = 0; i < defaultChunkSize; ++i)
 	{
-		y[i] = m_summ[i] + (i - (long)m_sampleDelay >= 0 ? y[i - m_sampleDelay] : m_prevLastCounts[i]);
+		y[i] = m_summ[i] + (i - (long)m_sampleDelay >= 0 ? m_summ[i - m_sampleDelay] : m_prevLastCounts[i]);
 	}
 
 	delete(m_summ);
