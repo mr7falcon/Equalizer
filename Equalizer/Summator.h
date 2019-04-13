@@ -16,6 +16,9 @@ public:
 
 	void SetEffect(Effects effect, bool reset = false);
 
+	void SetClippingCoef(const short coef);
+	const short GetClippingCoef() const { return m_clippingCoef; }
+
 private:
 	void HandleEvent();
 
@@ -31,6 +34,11 @@ private:
 
 	bool m_delay;
 	bool m_clipping;
+
 	const unsigned short m_sampleDelay;
 	short* m_prevLastCounts;
+
+	short m_maxClippingAmp;
+	short m_clippingCoef;
+	const short m_standartMaxClippingAmp;
 };

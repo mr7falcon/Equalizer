@@ -88,6 +88,14 @@ int main(int argc, char** argv)
 				equalizer.SetEffect(EFFECT_CLIPPING);
 				continue;
 			}
+
+			if (command == "cc")
+			{
+				short coef = 0;
+				std::cin >> coef;
+				equalizer.SetClippingCoef(coef);
+				continue;
+			}
 		}
 	});
 	commandThread.detach();

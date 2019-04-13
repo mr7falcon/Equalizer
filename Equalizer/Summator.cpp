@@ -3,7 +3,10 @@
 Summator::Summator(const unsigned short numOfBands)
 	:numOfBands(numOfBands),
 	m_numOfChunks(0),
-	m_sampleDelay(10000)
+	m_sampleDelay(10000),
+	m_standartMaxClippingAmp(1000),
+	m_clippingCoef(10),
+	m_maxClippingAmp(10000)
 {
 	m_prevLastCounts = new short[m_sampleDelay];
 
@@ -107,5 +110,21 @@ void Summator::ApplyDelay()
 
 void Summator::ApplyClipping()
 {
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
+	{
+		if (m_summ[i] > m_maxClippingAmp)
+		{
+			m_summ[i] = m_maxClippingAmp;
+		}
+		else if (m_summ[i] < -m_maxClippingAmp)
+		{
+			m_summ[i] = -m_maxClippingAmp;
+		}
+	}
+}
 
+void Summator::SetClippingCoef(const short coef)
+{
+	m_clippingCoef = coef;
+	m_maxClippingAmp = (short)(m_standartMaxClippingAmp * m_clippingCoef);
 }
