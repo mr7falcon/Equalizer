@@ -52,7 +52,7 @@ Equalizer::~Equalizer()
 
 void Equalizer::RunBlock(Block* block)
 {
-	std::thread* thrd = new std::thread([&]()
+	std::thread* thrd = new std::thread([=]()
 	{
 		block->Run();
 	});

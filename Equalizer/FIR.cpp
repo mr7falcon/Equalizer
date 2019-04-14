@@ -1,7 +1,7 @@
  #include "FIR.h"
  
 FIR::FIR(const unsigned short num, const unsigned short numOfBands)
-	:Filter(num, numOfBands, FCL - 1, 0.2)
+	:Filter(num, numOfBands, FCL - 1, 0.15)
 {
 	m_prevLastCounts = new short[order + 1];
 
