@@ -2,8 +2,12 @@
 
 Summator::Summator(const unsigned short numOfBands)
 	:numOfBands(numOfBands),
+	m_summ(nullptr),
 	m_numOfChunks(0),
 	m_sampleDelay(10000),
+	m_delay(false),
+	m_clipping(false),
+	m_sclipping(false),
 	m_standartMaxClippingAmp(1000),
 	m_clippingCoef(10),
 	m_maxClippingAmp(10000)
@@ -62,6 +66,11 @@ void Summator::HandleEvent()
 				ApplyClipping();
 			}
 
+			if (m_sclipping)
+			{
+				ApplySClipping();
+			}
+
 			if (output)
 			{
 				dynamic_cast<DataHandler*>(output)->SendNewData(m_summ);
@@ -92,6 +101,8 @@ void Summator::SetEffect(Effects effect, bool reset)
 	case EFFECT_CLIPPING:
 		m_clipping = reset ? false : !m_clipping;
 		break;
+	case EFFECT_SCLIPPING:
+		m_sclipping = reset ? false : !m_sclipping;
 	}
 }
 
@@ -127,4 +138,38 @@ void Summator::SetClippingCoef(const short coef)
 {
 	m_clippingCoef = coef;
 	m_maxClippingAmp = (short)(m_standartMaxClippingAmp * m_clippingCoef);
+}
+
+void Summator::ApplySClipping()
+{
+	const unsigned long memSize = defaultChunkSize * sizeof(fftw_complex);
+
+	fftw_complex* in = (fftw_complex*)fftw_malloc(memSize);
+
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
+	{
+		in[i][0] = (double)(m_summ[i]);
+		in[i][1] = 0.;
+	}
+
+	fftw_complex* out = (fftw_complex*)fftw_malloc(memSize);
+
+	fftw_plan plan = fftw_plan_dft_1d(defaultChunkSize, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+	fftw_execute(plan);
+
+
+
+	fftw_plan invPlan = fftw_plan_dft_1d(defaultChunkSize, out, in, FFTW_BACKWARD, FFTW_ESTIMATE);
+	fftw_execute(invPlan);
+
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
+	{
+		m_summ[i] = (short)(in[i][0] / defaultChunkSize);
+	}
+
+	fftw_free(in);
+	fftw_free(out);
+
+	fftw_destroy_plan(plan);
+	fftw_destroy_plan(invPlan);
 }

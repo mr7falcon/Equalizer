@@ -96,6 +96,12 @@ int main(int argc, char** argv)
 				equalizer.SetClippingCoef(coef);
 				continue;
 			}
+
+			if (command == "sclipping")
+			{
+				equalizer.SetEffect(EFFECT_SCLIPPING);
+				continue;
+			}
 		}
 	});
 	commandThread.detach();

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "DataHandler.h"
+#include "fftw3.h"
 
 enum Effects : unsigned short
 {
 	EFFECT_DELAY,
-	EFFECT_CLIPPING
+	EFFECT_CLIPPING,
+	EFFECT_SCLIPPING
 };
 
 class Summator : public DataHandler
@@ -26,6 +28,7 @@ private:
 
 	void ApplyDelay();
 	void ApplyClipping();
+	void ApplySClipping();
 
 	const unsigned short numOfBands;
 
@@ -34,6 +37,7 @@ private:
 
 	bool m_delay;
 	bool m_clipping;
+	bool m_sclipping;
 
 	const unsigned short m_sampleDelay;
 	short* m_prevLastCounts;
