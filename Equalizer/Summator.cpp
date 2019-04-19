@@ -143,32 +143,38 @@ void Summator::SetClippingCoef(const short coef)
 void Summator::ApplySClipping()
 {
 	const unsigned long memSize = defaultChunkSize * sizeof(fftw_complex);
-
-	fftw_complex* in = (fftw_complex*)fftw_malloc(memSize);
+	fftw_complex* complexBuffer = (fftw_complex*)fftw_malloc(memSize);
 
 	for (unsigned long i = 0; i < defaultChunkSize; ++i)
 	{
-		in[i][0] = (double)(m_summ[i]);
-		in[i][1] = 0.;
+		complexBuffer[i][0] = (double)(m_summ[i]);
+		complexBuffer[i][1] = 0.;
 	}
 
-	fftw_complex* out = (fftw_complex*)fftw_malloc(memSize);
-
-	fftw_plan plan = fftw_plan_dft_1d(defaultChunkSize, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+	fftw_plan plan = fftw_plan_dft_1d(defaultChunkSize, complexBuffer, complexBuffer, FFTW_FORWARD, FFTW_ESTIMATE);
 	fftw_execute(plan);
 
+	for (unsigned long i = 0; i < defaultChunkSize; ++i)
+	{
+		if (complexBuffer[i][0] > m_maxClippingAmp)
+		{
+			complexBuffer[i][0] = m_maxClippingAmp;
+		}
+		else if (complexBuffer[i][0] < -m_maxClippingAmp)
+		{
+			complexBuffer[i][0] = -m_maxClippingAmp;
+		}
+	}
 
-
-	fftw_plan invPlan = fftw_plan_dft_1d(defaultChunkSize, out, in, FFTW_BACKWARD, FFTW_ESTIMATE);
+	fftw_plan invPlan = fftw_plan_dft_1d(defaultChunkSize, complexBuffer, complexBuffer, FFTW_BACKWARD, FFTW_ESTIMATE);
 	fftw_execute(invPlan);
 
 	for (unsigned long i = 0; i < defaultChunkSize; ++i)
 	{
-		m_summ[i] = (short)(in[i][0] / defaultChunkSize);
+		m_summ[i] = (short)(complexBuffer[i][0] / defaultChunkSize);
 	}
 
-	fftw_free(in);
-	fftw_free(out);
+	fftw_free(complexBuffer);
 
 	fftw_destroy_plan(plan);
 	fftw_destroy_plan(invPlan);
