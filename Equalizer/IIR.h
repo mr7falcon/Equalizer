@@ -11,4 +11,6 @@ public:
 
 private:
 	const double* Filtering();
+
+	double** m_wHistory;
 };

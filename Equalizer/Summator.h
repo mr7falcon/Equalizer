@@ -2,6 +2,7 @@
 
 #include "DataHandler.h"
 #include "fftw3.h"
+#include <cmath>
 
 enum Effects : unsigned short
 {
@@ -9,6 +10,8 @@ enum Effects : unsigned short
 	EFFECT_CLIPPING,
 	EFFECT_SCLIPPING
 };
+
+const double pi = 3.1415926535;
 
 class Summator : public DataHandler
 {
@@ -43,6 +46,8 @@ private:
 	short* m_prevLastCounts;
 
 	short m_maxClippingAmp;
+	long m_maxSClippingAmp;
 	short m_clippingCoef;
 	const short m_standartMaxClippingAmp;
+	const long m_standartMaxSClippingAmp;
 };
