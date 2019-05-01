@@ -1,0 +1,12 @@
+﻿  Block.cpp
+  DataHandler.cpp
+  Equalizer.cpp
+  Filter.cpp
+C:\Users\mrfal\Documents\Equalizer\src\Equalizer\Equalizer\Filter.cpp(33): warning C4244: *=: преобразование "double" в "short", возможна потеря данных
+  FIR.cpp
+  IIR.cpp
+  InputDevice.cpp
+  OutputDevice.cpp
+  Summator.cpp
+  Создание кода...
+  Equalizer.vcxproj -> C:\Users\mrfal\Documents\Equalizer\src\Equalizer\x64\Debug\Equalizer.lib
