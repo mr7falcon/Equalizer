@@ -26,7 +26,7 @@ const std::vector<unsigned short> ExtractBandNums()
 
 int main(int argc, char** argv)
 {
-	if (argc < 3)
+	if (argc < 2)
 	{
 		Log("Wrong args");
 		return 1;
@@ -34,11 +34,11 @@ int main(int argc, char** argv)
 
 	Filters filterType = FILTER_WRONG;
 
-	if (!strcmp(argv[2], "f"))
+	if (!strcmp(argv[1], "f"))
 	{
 		filterType = FILTER_FIR;
 	}
-	else if (!strcmp(argv[2], "i"))
+	else if (!strcmp(argv[1], "i"))
 	{
 		filterType = FILTER_IIR;
 	}
@@ -114,7 +114,9 @@ int main(int argc, char** argv)
 
 				if (command == "open")
 				{
-					equalizer.Open(argv[1]);
+					std::string fileName = "";
+					std::cin >> fileName;
+					equalizer.Open(fileName.c_str());
 					continue;
 				}
 			}
